@@ -1,7 +1,14 @@
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class Project22 {
-
+	private static void timerS(int seconds) {
+		try {
+			TimeUnit.SECONDS.sleep(seconds);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 	public static void main(String[] args) {
 		String awsCredentialsPath = "/AwsCredentials.properties";
 		//String securityGroup = "Project2Group";
@@ -18,14 +25,40 @@ public class Project22 {
 		
 		//Access EC2//
 		AccessEC2 EC2handler = new AccessEC2(awsCredentialsPath);
-		ArrayList<String> instanceIds = EC2handler.runSpotInstance(securityGroup, amiId, 1);
-		if (instanceIds != null) {
-			EC2handler.tagInstanceById(instanceIds, "IS-ESE", "Automation");
-			for (String s : instanceIds) {
-				System.out.println("Instance Id : <" + s + ">");
+		String instanceId = EC2handler.runInstance(securityGroup, amiId, "t2.micro", 1, "us-east-1a");
+		//String instanceId = "i-fe58fd57";
+		
+		while (true) {
+			String state = EC2handler.getStateById(instanceId);
+			if (state == null) {
+				System.out.println("[Error]: Getting state failing");
+				break;
 			}
+			
+			if (state.equals("running")) {
+				System.out.println("[" + instanceId + "]: " +  "is running.");
+				ArrayList<String> array = new ArrayList<String>();
+				array.add(instanceId);
+				EC2handler.tagInstancesByIds(array,"IS-ESE", "Automation");
+			} else if (state.equals("pending")){
+				System.out.println("[" + instanceId + "]: " +  "is pending.");
+			} else if (state.equals("terminated")) {
+				System.out.println("[" + instanceId + "]: " +  "is terminated.");
+				break;
+			} else if (state.equals("shutting-down")) {
+				System.out.println("[" + instanceId + "]: " +  "is shutting-down.");
+			}
+			timerS(60);
 		}
 		System.out.println("Done.");
+//		ArrayList<String> instanceIds = EC2handler.runSpotInstance(securityGroup, amiId, 1);
+//		if (instanceIds != null) {
+//			EC2handler.tagInstanceById(instanceIds, "IS-ESE", "Automation");
+//			for (String s : instanceIds) {
+//				System.out.println("Instance Id : <" + s + ">");
+//			}
+//		}
+//		System.out.println("Done.");
 		
 		//create a new security group
 		//String securityGroupId = EC2handler.createSecurityGroup( securityGroup, "Created for Project2 Programming");

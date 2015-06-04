@@ -24,6 +24,7 @@ import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.LaunchSpecification;
+import com.amazonaws.services.ec2.model.Placement;
 import com.amazonaws.services.ec2.model.RequestSpotInstancesRequest;
 import com.amazonaws.services.ec2.model.RequestSpotInstancesResult;
 import com.amazonaws.services.ec2.model.Reservation;
@@ -70,17 +71,20 @@ public class AccessEC2 {
 //        System.out.println("------------------------------------------------");
 //         } 
 //	}
-	public void runInstance(String AMI, String instanceType, int num) {
-		RunInstancesRequest runInstancesRequest = new RunInstancesRequest();      	
+	public String runInstance(String securityGroup, String AMI, String instanceType, int num, String zone) {
+		System.out.println("[Info]: Trying to run an instance...");
+		RunInstancesRequest runInstancesRequest = new RunInstancesRequest();  
+		
 		runInstancesRequest.withImageId(AMI)
 		.withInstanceType(instanceType)
 		.withMinCount(num)
 		.withMaxCount(num)
-		.withKeyName("my-key-pair") //fixed
-		.withSecurityGroups("my-security-group"); //fixed
-		
+		.withKeyName("is") //fixed
+		.withPlacement(new Placement().withAvailabilityZone(zone))
+		.withSecurityGroups(securityGroup); //fixed
 		RunInstancesResult runInstancesResult = this.ec2.runInstances(runInstancesRequest);
-		//TODO: wtih runInstancesResult
+		String instanceId=runInstancesResult.getReservation().getInstances().get(0).getInstanceId();
+		return instanceId;
 	}
 	/**
 	 * 
@@ -226,7 +230,7 @@ public class AccessEC2 {
 		    System.out.println("Request ID: " + e.getRequestId());
 		}
 	}
-	public void tagInstanceById(ArrayList<String> instanceIds, String name, String value) {
+	public void tagInstancesByIds(ArrayList<String> instanceIds, String name, String value) {
 		System.out.println("[Info]: Tagging instance by <" + name +", " + value + ">.");
 		// Create the list of tags we want to create
 	    ArrayList<Tag> instanceTags = new ArrayList<Tag>();
@@ -295,7 +299,11 @@ public class AccessEC2 {
 	}
 
 	//get state by id
-	private String getStateById(String instancId){
+	public String getStateById(String instancId){
+		if (instancId == null) {
+			System.out.println("[Error]: Getting Instance Id failing.");
+			return null;
+		}
 		//Obtain a list of Reservations
 		List<Reservation> reservations = this.ec2.describeInstances().getReservations();
 		for (Reservation reservation:reservations) {
@@ -303,11 +311,16 @@ public class AccessEC2 {
 				if (instance.getInstanceId().equals(instancId)) {
 					//only when state is running, dns is available.
 					if(instance.getState().getName().equals("running")) {
-						return instance.getPublicDnsName();
+						return "running";
 					//pending is a normal state before running
 					} else if (instance.getState().getName().equals("pending")) {
 						return "pending";
 					//other state will make DNS invalid forever.
+					}else if (instance.getState().getName().equals("terminated")) {
+						return "terminated";
+					//other state will make DNS invalid forever.
+					} else if (instance.getState().getName().equals("shutting-down")){
+						return "shutting-down";
 					} else {
 						return null;
 					}
