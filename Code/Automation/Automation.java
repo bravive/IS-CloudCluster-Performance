@@ -33,7 +33,8 @@ public class Automation {
 				}
 				if (instanceIds.size() < maxInstanceNum) {
 					baseSpotPrice = baseSpotPrice + 0.01f;
-					instanceIds = EC2handler.runSpotInstance(securityGroup, "m3.medium", amiId, maxInstanceNum - instanceIds.size(), Float.toString(baseSpotPrice),zone);
+					ArrayList<String> newIds = EC2handler.runSpotInstance(securityGroup, "m3.medium", amiId, maxInstanceNum - instanceIds.size(), Float.toString(baseSpotPrice),zone);
+					instanceIds.addAll(newIds);
 				} else if (instanceIds.size() == maxInstanceNum) {
 					break;
 				}
