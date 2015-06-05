@@ -91,23 +91,23 @@ public class AccessEC2 {
 	 * @param num
 	 * @return instance of ids
 	 */
-	public ArrayList<String> runSpotInstance(String securityGroupName, String AMI, int num) {
+	public ArrayList<String> runSpotInstance(String securityGroupName,String instanceType, String AMI, int num, String price, String zone) {
 		// Setup the specifications of the launch. This includes the
 		// instance type (e.g. t1.micro) and the latest Amazon Linux
 		// AMI id available. Note, you should always use the latest
 		// Amazon Linux AMI id or another of your choosing.
 		LaunchSpecification launchSpecification = new LaunchSpecification();
 		launchSpecification.withImageId(AMI)
-			.withInstanceType("m3.medium")
+			.withInstanceType(instanceType)
 			.withKeyName("is") //fixed
 			.withSecurityGroups(securityGroupName);
 		
 		// Initializes a Spot Instance Request
 		RequestSpotInstancesRequest requestRequest = new RequestSpotInstancesRequest();
-		SpotPlacement placement = new SpotPlacement("us-east-1d");
+		SpotPlacement placement = new SpotPlacement(zone);
 		launchSpecification.setPlacement(placement);
 		requestRequest
-			.withSpotPrice("0.02")
+			.withSpotPrice(price)
 			.withInstanceCount(num) // number of spot instance
 			.withLaunchSpecification(launchSpecification);
 		
