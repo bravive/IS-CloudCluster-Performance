@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -21,6 +22,8 @@ import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
 import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsRequest;
 import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsResult;
+import com.amazonaws.services.ec2.model.DescribeSpotPriceHistoryRequest;
+import com.amazonaws.services.ec2.model.DescribeSpotPriceHistoryResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.LaunchSpecification;
@@ -32,6 +35,7 @@ import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.SpotInstanceRequest;
 import com.amazonaws.services.ec2.model.SpotPlacement;
+import com.amazonaws.services.ec2.model.SpotPrice;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 
@@ -71,6 +75,21 @@ public class AccessEC2 {
 //        System.out.println("------------------------------------------------");
 //         } 
 //	}
+	//
+	public String getHistoryPrice(String instanceType, String zone, String productDescribe) {
+		DescribeSpotPriceHistoryRequest request = new DescribeSpotPriceHistoryRequest();
+		request
+			.withAvailabilityZone(zone)
+			.withInstanceTypes(instanceType)
+			.withProductDescriptions(productDescribe);
+		DescribeSpotPriceHistoryResult rs = this.ec2.describeSpotPriceHistory(request);
+		List<SpotPrice> list = rs.getSpotPriceHistory();
+//		for (SpotPrice sp : list) {
+//			System.out.println(sp.getTimestamp());
+//			System.out.println(sp.getSpotPrice());
+//		}
+		return list.get(0).getSpotPrice();
+	}
 	public String runInstance(String securityGroup, String AMI, String instanceType, int num, String zone) {
 		System.out.println("[Info]: Trying to run an instance...");
 		RunInstancesRequest runInstancesRequest = new RunInstancesRequest();  

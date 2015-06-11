@@ -2,27 +2,27 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class Automation {
-	private static void timerS(int seconds) {
-		try {
-			TimeUnit.SECONDS.sleep(seconds);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-	public static void main(String[] args) {
-		String awsCredentialsPath = "/AwsCredentials.properties";
 
+	public static void main(String[] args) {
+		/*****************Access EC2*****************/
+		String awsCredentialsPath = "/AwsCredentials.properties";
+		AccessEC2 EC2handler = new AccessEC2(awsCredentialsPath);
+		
+		/**************Initial Variable**************/
 		String securityGroup = "all-traffic";
 		String amiId = "ami-0e0b1166";
 		int maxInstanceNum = 3;
-		float baseSpotPrice = 0.01f;
 		String zone = "us-east-1d";
-		//Access EC2//
-		AccessEC2 EC2handler = new AccessEC2(awsCredentialsPath);
-		ArrayList<String> instanceIds = EC2handler.runSpotInstance(securityGroup, "m3.medium", amiId, maxInstanceNum, Float.toString(baseSpotPrice), zone);
+		String instanceType = "m3.medium";
+		String productDescribe = "Linux/UNIX";
+		String minSpotPrice = EC2handler.getHistoryPrice(instanceType,zone, productDescribe);
+		float betSpotPrice = 2 * Float.parseFloat(minSpotPrice);
 		
-		//spot instance
+		/**************Begin to Control & Monitor**************/
+		ArrayList<String> instanceIds = EC2handler.runSpotInstance(securityGroup, instanceType, amiId, maxInstanceNum, Float.toString(betSpotPrice), zone);
+		
 		while (true) {
+			//spot and run instance
 			while(true) {
 				//repeat tag will not cause problems,
 				if (instanceIds != null) {
@@ -32,15 +32,16 @@ public class Automation {
 					}
 				}
 				if (instanceIds.size() < maxInstanceNum) {
-					baseSpotPrice = baseSpotPrice + 0.01f;
-					ArrayList<String> newIds = EC2handler.runSpotInstance(securityGroup, "m3.medium", amiId, maxInstanceNum - instanceIds.size(), Float.toString(baseSpotPrice),zone);
+					minSpotPrice = EC2handler.getHistoryPrice(instanceType,zone, productDescribe);
+					betSpotPrice = 2 * Float.parseFloat(minSpotPrice);
+					ArrayList<String> newIds = EC2handler.runSpotInstance(securityGroup, "m3.medium", amiId, maxInstanceNum - instanceIds.size(), Float.toString(betSpotPrice),zone);
 					instanceIds.addAll(newIds);
 				} else if (instanceIds.size() == maxInstanceNum) {
 					break;
 				}
 			}
+			
 			//monitor instance
-			//
 			int runningCount = 0;
 			int terminatedCount = 0;
 			int circle = 0;
@@ -84,6 +85,13 @@ public class Automation {
 			//when the second while break, that means there is at least one instance is terminated.
 			//Only such situation is checked twice by circle variable, the program will go out to 
 			//the outer while loop, and then begin a new spot instance progress.
+		}
+	}
+	private static void timerS(int seconds) {
+		try {
+			TimeUnit.SECONDS.sleep(seconds);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 }
