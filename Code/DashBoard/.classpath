@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/c3p0-0.9.5.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/c3p0-oracle-thin-extras-0.9.5.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/jboss-logging-3.2.1.Final.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/mchange-commons-java-0.2.9.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/mysql-connector-java-5.1.34-bin.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/undertow-servlet-1.3.0.Beta1.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/undertow-websockets-jsr-1.3.0.Beta1.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/xnio-api-3.3.0.Final.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/xnio-nio-3.3.0.Final.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/javax.servlet-api-3.1.0.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/jboss-websocket-api_1.1_spec-1.1.1.Final.jar"/>
+	<classpathentry kind="lib" path="/Users/Oliver/Workspaces/Eclipse/IndepStudy/DashBoard/lib/undertow-core-1.3.0.Beta1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
