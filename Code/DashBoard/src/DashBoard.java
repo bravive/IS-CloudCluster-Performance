@@ -15,34 +15,32 @@ import static io.undertow.servlet.Servlets.servlet;
 
 
 public class DashBoard {
-	public static final String MYAPP = "/";
-	public static void main(final String[] args) {
-		try {
-			DeploymentInfo servletBuilder = deployment()
-				.setClassLoader(DashBoard.class.getClassLoader())
-				.setContextPath(MYAPP)
-				.setDeploymentName("DashBoard.war")
-				.setResourceManager(new FileResourceManager(new File("WebContent"), 1024))
-				.addServlets(
-						servlet("MessageServlet", MessageServlet.class)
-							.addInitParam("message", "test")
-							.addMapping("/test"));
+	public static void main(final String[] args) throws ServletException {
+		DeploymentInfo servletBuilder = deployment()
+        .setClassLoader(DashBoard.class.getClassLoader())
+        .setContextPath("/app")
+        .setDeploymentName("DashBoard.war")
+        .setResourceManager(new FileResourceManager(new File("myapp"), 1024))
+        .addServlets(
+                servlet("BasePageServlet", BasePageServlet.class)
+                        .addMapping(""),
+                servlet("GetStatusServlet", getStatusServlet.class)
+                        .addMapping("/status"),
+				servlet("GetPerformanceServlet", getPerformanceServlet.class)
+		        		.addMapping("/performance"));
+                       
+                
 
-			DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
-			manager.deploy();
-			
-			HttpHandler servletHandler = manager.start();
-			PathHandler path = Handlers.path(Handlers.redirect(MYAPP)).addPrefixPath(MYAPP, servletHandler);
-	
-			Undertow server = Undertow.builder()
-				.addHttpListener(8080, "0.0.0.0") //For local machine
-				.setHandler(path)
-				.build();
-			server.start();
-			
-		} catch (ServletException e) {
-			throw new RuntimeException(e);
-		}
+		DeploymentManager manager = defaultContainer().addDeployment(servletBuilder);
+		manager.deploy();
+		PathHandler path = Handlers.path(Handlers.redirect("/app"))
+		        .addPrefixPath("/app", manager.start());
+
+		Undertow server = Undertow.builder()
+		        .addHttpListener(8080, "localhost")
+		        .setHandler(path)
+		        .build();
+		server.start();
 	}
 }
 
