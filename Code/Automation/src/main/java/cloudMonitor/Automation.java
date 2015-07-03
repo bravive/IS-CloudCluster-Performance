@@ -2,31 +2,36 @@ import java.util.ArrayList;
 
 public class Automation {
 	public static void main(String[] args) {
-		/*****************Access EC2*****************/
-		String awsCredentialsPath = "/AwsCredentials.properties";
-		AccessEC2 EC2handler = new AccessEC2(awsCredentialsPath);
+		Arguments allArguments = ParseArgument.parseArguments(args);
+		//Utility.logPrint(allArguments.toString());
 		
+		/*****************Access EC2*****************/
+		//Authorized by specified file.
+//		String awsCredentialsPath = "/AwsCredentials.properties";
+//		AccessEC2 EC2handler = new AccessEC2(awsCredentialsPath);
+		//Authorized by input arguments.
+		AccessEC2 EC2handler = new AccessEC2(allArguments.accessKeyId, allArguments.secretAccesssKey);
 		/**************Aggregator Initial Variable**************/
-		String aggSecurityGroup = "all-traffic";
-		String aggSmiId = "ami-dbfc07b0"; //"ami-0e0b1166";
-		int aggMaxInstanceNum = 1;
-		String aggZone = "us-east-1d";
-		String aggInstanceType = "m3.medium";
-		String aggProductDescribe = "Linux/UNIX";
-		String aggOutputPath = "AggregatorDNS.info";
+		String aggSecurityGroup = allArguments.securityGroup;
+		String aggAmiId = allArguments.aggAmiId; //"ami-0e0b1166";
+		int aggMaxInstanceNum = allArguments.aggMaxInstanceNum;
+		String aggZone = allArguments.aggZone;
+		String aggInstanceType = allArguments.aggInstanceType;
+		String aggProductDescribe = allArguments.productDescribe;
+		String aggOutputPath = allArguments.aggOutputPath;
 		/**************Nodes Initial Variable**************/
-		String nodSecurityGroup = "all-traffic";
-		String nodAmiId = "ami-dbfc07b0"; //"ami-0e0b1166";
-		int nodMaxInstanceNum = 2;
-		String nodZone = "us-east-1d";
-		String nodInstanceType = "m3.medium";
-		String nodProductDescribe = "Linux/UNIX";
-		String nodOutputPath = "NodesDNS.info";
+		String nodSecurityGroup = allArguments.securityGroup;
+		String nodAmiId =allArguments.nodAmiId; //"ami-0e0b1166";
+		int nodMaxInstanceNum = allArguments.nodMaxInstanceNum;
+		String nodZone = allArguments.nodZone;
+		String nodInstanceType = allArguments.nodInstanceType;
+		String nodProductDescribe = allArguments.productDescribe;
+		String nodOutputPath = allArguments.nodOutputPath;
 		/**************Begin Two monitoring thread(aggregator && nodes)**************/
 		Monitor mAgg = new Monitor();
 		Monitor mNod = new Monitor();
 		mAgg.withAccessEC2(EC2handler)
-			.withAMIId(aggSmiId)
+			.withAMIId(aggAmiId)
 			.withInstanceType(aggInstanceType)
 			.withMaxInstanceNum(aggMaxInstanceNum)
 			.withProductDescribe(aggProductDescribe)
@@ -104,34 +109,6 @@ class Monitor implements Runnable {
 		return this;
 	}
 	public void run() {
-		if (this.EC2handler == null) {
-			Utility.logPrint("[Error]: Must specify an AccessEC2");
-			return;
-		}
-		if (this.securityGroup.equals("")) {
-			Utility.logPrint("[Error]: Must specify a securityGroup");
-			return;
-		}
-		if (this.amiId.equals("")) {
-			Utility.logPrint("[Error]: Must specify an amiId");
-			return;
-		}
-		if (this.maxInstanceNum == 0) {
-			Utility.logPrint("[Error]: Must set maxInstanceNum greater than 0");
-			return;
-		}
-		if (this.zone.equals("")) {
-			Utility.logPrint("[Error]: Must specify a zone");
-			return;
-		}
-		if (this.instanceType.equals("")) {
-			Utility.logPrint("[Error]: Must specify an instanceType");
-			return;
-		}
-		if (this.outputPath.equals("")) {
-			Utility.logPrint("[Error]: Must specify an outputPath for information");
-			return;
-		}
 		/**************Get initial price**************/
 		String minSpotPrice = EC2handler.getHistoryPrice(this.instanceType, this.zone, this.productDescribe);
 		float betSpotPrice = 2 * Float.parseFloat(minSpotPrice);

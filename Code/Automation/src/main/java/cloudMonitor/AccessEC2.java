@@ -45,6 +45,10 @@ public class AccessEC2 {
 		//call hanlerEC2 to configure ec2 client, then return a EC2 client
 		this.ec2 = handlerEC2(awsCredentialsPath);
 	}
+	AccessEC2(String accessKeyId, String secretAccesssKey) {
+		//call hanlerEC2 to configure ec2 client, then return a EC2 client
+		this.ec2 = handlerEC2(accessKeyId, secretAccesssKey);
+	}
 	//get the created ec2.
 	public AmazonEC2Client getEC2(){
 		return this.ec2;
@@ -352,6 +356,14 @@ public class AccessEC2 {
 		//get info. by accessKey and secretKey
 		BasicAWSCredentials bawsc = new BasicAWSCredentials(properties.getProperty("accessKey"), properties.getProperty("secretKey"));
 		//Create an Amazon EC2 Client by basic aws credentials
+		AmazonEC2Client ec2 = new AmazonEC2Client(bawsc);
+		//set region of ec2 to Virginia
+		Region usEast1 = Region.getRegion(Regions.US_EAST_1);
+        ec2.setRegion(usEast1);
+		return ec2;
+	}
+	private AmazonEC2Client handlerEC2 (String accessKeyId, String secretAccesssKey) {
+		BasicAWSCredentials bawsc = new BasicAWSCredentials(accessKeyId, secretAccesssKey);
 		AmazonEC2Client ec2 = new AmazonEC2Client(bawsc);
 		//set region of ec2 to Virginia
 		Region usEast1 = Region.getRegion(Regions.US_EAST_1);
