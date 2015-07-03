@@ -104,12 +104,12 @@ public class ParseArgument {
 				allArguments.secretAccesssKey = props.getProperty("secretAccesssKey");
 			} else {
 				Utility.logPrint("[Error]: Must provide your accessKeyId AND secretAccesssKey.");
-				System.exit(1);
+				//System.exit(1);
 			}
 			
 			if (!cmd.hasOption("e")) {
 				Utility.logPrint("[Info]: If you want execute monitor, please add -e argument");
-				System.exit(1);
+				//System.exit(1);
 			}
 			
 		} catch (ParseException e) {
@@ -136,7 +136,7 @@ class Arguments {
 	String nodInstanceType = "m3.medium";
 	String nodOutputPath = "NodesDNS.info";
 	public String toString() {
-		String rs = "";
+		String rs = "\n";
 		rs += "-------All Arguments information------\n";
 		rs += "accessKeyId: " + this.accessKeyId + "\n";
 		rs += "secretAccesssKey: " + this.secretAccesssKey + "\n";

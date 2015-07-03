@@ -109,34 +109,6 @@ class Monitor implements Runnable {
 		return this;
 	}
 	public void run() {
-		if (this.EC2handler == null) {
-			Utility.logPrint("[Error]: Must specify an AccessEC2");
-			return;
-		}
-		if (this.securityGroup.equals("")) {
-			Utility.logPrint("[Error]: Must specify a securityGroup");
-			return;
-		}
-		if (this.amiId.equals("")) {
-			Utility.logPrint("[Error]: Must specify an amiId");
-			return;
-		}
-		if (this.maxInstanceNum == 0) {
-			Utility.logPrint("[Error]: Must set maxInstanceNum greater than 0");
-			return;
-		}
-		if (this.zone.equals("")) {
-			Utility.logPrint("[Error]: Must specify a zone");
-			return;
-		}
-		if (this.instanceType.equals("")) {
-			Utility.logPrint("[Error]: Must specify an instanceType");
-			return;
-		}
-		if (this.outputPath.equals("")) {
-			Utility.logPrint("[Error]: Must specify an outputPath for information");
-			return;
-		}
 		/**************Get initial price**************/
 		String minSpotPrice = EC2handler.getHistoryPrice(this.instanceType, this.zone, this.productDescribe);
 		float betSpotPrice = 2 * Float.parseFloat(minSpotPrice);

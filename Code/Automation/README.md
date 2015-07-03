@@ -7,7 +7,7 @@ mvn exec:java -Dexec.args="-e -DaccessKeyId=xxxx -DsecretAccesssKey=xxxx”
 
 
 
-/**For pom.xml.old, it will package the project
+/**For pom.xml.1.0, it will package the project
  * into a single jar file. Use java -cp in target/
  * to run the project*/
 
