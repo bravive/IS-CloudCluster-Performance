@@ -1,11 +1,4 @@
 import java.util.ArrayList;
-import java.util.Properties;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 public class Automation {
 	public static void main(String[] args) {
