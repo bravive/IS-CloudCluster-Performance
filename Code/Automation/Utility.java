@@ -29,6 +29,6 @@ public class Utility {
 	public static void logPrint(String string) {
 		Date dNow = new Date( );
 		SimpleDateFormat ft = new SimpleDateFormat ("yyyy/MM/dd HH:mm:ss zzz");
-		System.out.println("[" + ft.format(dNow) + "]==> " + string);
+		System.out.println("[" + ft.format(dNow) + "]==" + string);
 	}
 }
