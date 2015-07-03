@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -15,9 +14,6 @@ import com.amazonaws.services.ec2.model.CancelSpotInstanceRequestsRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
-import com.amazonaws.services.ec2.model.DeleteSecurityGroupRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
 import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsRequest;
@@ -53,29 +49,7 @@ public class AccessEC2 {
 	public AmazonEC2Client getEC2(){
 		return this.ec2;
 	}
-//	public void checkInstanceStatus(String instanceId) {
-//		DescribeInstancesRequest request =new DescribeInstancesRequest();   
-//
-//        DescribeInstancesResult disresult =ec2.describeInstances(request);
-//        List <Reservation> list  = disresult.getReservations();
-//        
-//        System.out.println("-------------- status of instances -------------");
-//        for (Reservation res:list){
-//             List <Instance> instancelist = res.getInstances();
-//
-//             for (Instance instance:instancelist){
-//
-//                 System.out.println("Instance Status : "+instance.getState().getName());
-//                 List <Tag> t1 =instance.getTags();
-//                 for (Tag teg:t1){
-//                     System.out.println("Instance Name   : "+teg.getValue());
-//                 }
-//
-//             }     
-//        System.out.println("------------------------------------------------");
-//         } 
-//	}
-	//
+
 	public String getHistoryPrice(String instanceType, String zone, String productDescribe) {
 		DescribeSpotPriceHistoryRequest request = new DescribeSpotPriceHistoryRequest();
 		request
@@ -84,14 +58,10 @@ public class AccessEC2 {
 			.withProductDescriptions(productDescribe);
 		DescribeSpotPriceHistoryResult rs = this.ec2.describeSpotPriceHistory(request);
 		List<SpotPrice> list = rs.getSpotPriceHistory();
-//		for (SpotPrice sp : list) {
-//			System.out.println(sp.getTimestamp());
-//			System.out.println(sp.getSpotPrice());
-//		}
 		return list.get(0).getSpotPrice();
 	}
 	public String runInstance(String securityGroup, String AMI, String instanceType, int num, String zone) {
-		System.out.println("[Info]: Trying to run an instance...");
+		Utility.logPrint("[Info]: Trying to run an instance...");
 		RunInstancesRequest runInstancesRequest = new RunInstancesRequest();  
 		
 		runInstancesRequest.withImageId(AMI)
@@ -129,22 +99,20 @@ public class AccessEC2 {
 			.withSpotPrice(price)
 			.withInstanceCount(num) // number of spot instance
 			.withLaunchSpecification(launchSpecification);
-		
-		
-		
 
 		// Call the RequestSpotInstance API.
 		RequestSpotInstancesResult requestResult = this.ec2.requestSpotInstances(requestRequest);
 		List<SpotInstanceRequest> requestResponses = requestResult.getSpotInstanceRequests();
-
+		Utility.logPrint("[Info]: RequestResponses size = " + requestResponses.size());
 		// Setup an arraylist to collect all of the request ids we want to
 		// watch hit the running state.
 		ArrayList<String> spotInstanceRequestIds = new ArrayList<String>();
 		for (SpotInstanceRequest requestResponse : requestResponses) {
-		    System.out.println("Created Spot Request: "+requestResponse.getSpotInstanceRequestId());
+		    Utility.logPrint("[Info]: Created Spot Request: "+requestResponse.getSpotInstanceRequestId());
 		    spotInstanceRequestIds.add(requestResponse.getSpotInstanceRequestId());
 		}
 		//check by spot request id
+		Utility.timerS(60);
 		return checkInstanceSpotStatus(spotInstanceRequestIds);
 	}
 	/**
@@ -156,10 +124,10 @@ public class AccessEC2 {
 	 */
 	private ArrayList<String> checkInstanceSpotStatus(ArrayList<String> spotInstanceRequestIds) {
 		ArrayList<String> instanceIds = new ArrayList<String>();
-		int open = spotInstanceRequestIds.size();;
+		int open = spotInstanceRequestIds.size();
 		int active = 0;
 		boolean failed = false;
-		System.out.println("[Info]: Begin to check Instance Spot Status");
+		Utility.logPrint("[Info]: Begin to check Instance Spot Status");
 		do {
 		    // Create the describeRequest object with all of the request ids
 		    // to monitor (e.g. that we started).
@@ -181,14 +149,14 @@ public class AccessEC2 {
 		            // almost immediately to closed or cancelled so we compare
 		            // against open instead of active.
 			        if (describeResponse.getState().equals("open") && open != 0) {
-			        	System.out.println("[Info]: One spot instance is open.");
+			        	Utility.logPrint("[Info]: One spot instance is open.");
 			        	open--;
 			        } else if (describeResponse.getState().equals("failed")){
 			        	failed = true;
-			        	System.out.println("[Error]: Any spot instances failed.");
+			        	Utility.logPrint("[Error]: Any spot instances failed.");
 			        	break;
 			        } else if (describeResponse.getState().equals("active")) {
-			        	System.out.println("[Info]: One spot instance is active.");
+			        	Utility.logPrint("[Info]: One spot instance is active.");
 			        	active--;
 			        }
 			    }
@@ -197,7 +165,7 @@ public class AccessEC2 {
 		        	for (SpotInstanceRequest describeResponse : describeResponses) {
 		        		instanceIds.add(describeResponse.getInstanceId());
 		        	}
-		        	System.out.println("[Info]: All spot instance are open.");
+		        	Utility.logPrint("[Info]: All spot instance are open.");
 			    	break;
 			    }
 		        //fail
@@ -206,54 +174,47 @@ public class AccessEC2 {
 			    	return null;
 			    }
 			} catch (AmazonServiceException e) {
-				return null;
+				Utility.logPrint(e.toString());
 			}
-
-		    try {
-		        // Sleep for 60 seconds.
-		        Thread.sleep(60*1000);
-		    } catch (Exception e) {
-		        // Do nothing because it woke up early.
-		    }
-		    
+		    Utility.timerS(60);
 		} while (true); 
 		
 		return instanceIds;
 	}
 	private void cancelSpotReq(ArrayList<String> spotInstanceRequestIds) {
-		System.out.println("[Info]: Begin to CANCEL spot.");
+		Utility.logPrint("[Info]: Begin to CANCEL spot.");
 		 try {
 		      // Cancel requests.
 		      CancelSpotInstanceRequestsRequest cancelRequest = new CancelSpotInstanceRequestsRequest(spotInstanceRequestIds);
 		      this.ec2.cancelSpotInstanceRequests(cancelRequest);
 		    } catch (AmazonServiceException e) {
 		      // Write out any exceptions that may have occurred.
-		      System.out.println("Error canceling instances");
-		      System.out.println("Caught Exception: " + e.getMessage());
-		      System.out.println("Reponse Status Code: " + e.getStatusCode());
-		      System.out.println("Error Code: " + e.getErrorCode());
-		      System.out.println("Request ID: " + e.getRequestId());
+		      Utility.logPrint("[Expection]: Error canceling instances");
+		      Utility.logPrint("[Expection]: Caught Exception: " + e.getMessage());
+		      Utility.logPrint("[Expection]: Reponse Status Code: " + e.getStatusCode());
+		      Utility.logPrint("[Expection]: Error Code: " + e.getErrorCode());
+		      Utility.logPrint("[Expection]: Request ID: " + e.getRequestId());
 		    }
 	}
 	public void terminateInstance(ArrayList<String> instanceIds) {	
 		try {
 		    // Terminate instances.
 		    TerminateInstancesRequest terminateRequest = new TerminateInstancesRequest(instanceIds);
-		    ec2.terminateInstances(terminateRequest);
+		    this.ec2.terminateInstances(terminateRequest);
 		} catch (AmazonServiceException e) {
 		    // Write out any exceptions that may have occurred.
-		    System.out.println("Error terminating instances");
-		    System.out.println("Caught Exception: " + e.getMessage());
-		    System.out.println("Reponse Status Code: " + e.getStatusCode());
-		    System.out.println("Error Code: " + e.getErrorCode());
-		    System.out.println("Request ID: " + e.getRequestId());
+		    Utility.logPrint("[Expection]: Error terminating instances");
+		    Utility.logPrint("[Expection]: Caught Exception: " + e.getMessage());
+		    Utility.logPrint("[Expection]: Reponse Status Code: " + e.getStatusCode());
+		    Utility.logPrint("[Expection]: Error Code: " + e.getErrorCode());
+		    Utility.logPrint("[Expection]: Request ID: " + e.getRequestId());
 		}
 	}
 	public void tagInstancesByIds(ArrayList<String> instanceIds, String name, String value) {
-		System.out.println("[Info]: Tagging instance by <" + name +", " + value + ">.");
+		Utility.logPrint("[Info]: Tagging instance by <" + name +", " + value + ">.");
 		// Create the list of tags we want to create
 	    ArrayList<Tag> instanceTags = new ArrayList<Tag>();
-	    instanceTags.add(new Tag("IS-ESE","Automation"));
+	    instanceTags.add(new Tag(name, value));
 
 	    // Create a tag request for instances.
 	    CreateTagsRequest createTagsRequest_instances = new CreateTagsRequest();
@@ -265,13 +226,12 @@ public class AccessEC2 {
 	      ec2.createTags(createTagsRequest_instances);
 	    } catch (AmazonServiceException e) {
 	      // Write out any exceptions that may have occurred.
-	      System.out.println("Error terminating instances");
-	      System.out.println("Caught Exception: " + e.getMessage());
-	      System.out.println("Reponse Status Code: " + e.getStatusCode());
-	      System.out.println("Error Code: " + e.getErrorCode());
-	      System.out.println("Request ID: " + e.getRequestId());
+	      Utility.logPrint("[Expection]: Error terminating instances");
+	      Utility.logPrint("[Expection]: Caught Exception: " + e.getMessage());
+	      Utility.logPrint("[Expection]: Reponse Status Code: " + e.getStatusCode());
+	      Utility.logPrint("[Expection]: Error Code: " + e.getErrorCode());
+	      Utility.logPrint("[Expection]: Request ID: " + e.getRequestId());
 	    }
-
 	}
 
 	//use EC2client to create a security group
@@ -285,18 +245,18 @@ public class AccessEC2 {
 			//link ec2 and security group
 			CreateSecurityGroupResult createSecurityGroupResult = this.ec2.createSecurityGroup(csgr);
 			newGroupId = createSecurityGroupResult.getGroupId();
-            System.out.println(String.format("Security group created: [%s]",createSecurityGroupResult.getGroupId()));
+            Utility.logPrint(String.format("[Info]: Security group created: <%s>",createSecurityGroupResult.getGroupId()));
         } catch (AmazonServiceException ase) {
             // Likely this means that the group is already created, so ignore.
         	//get id by group Name, then return 
-            System.out.println(ase.getMessage());
+            Utility.logPrint(ase.getMessage());
             try{
             	DescribeSecurityGroupsRequest describeSecurityGroupsRequest = new DescribeSecurityGroupsRequest();
                 DescribeSecurityGroupsResult dsgResult =  this.ec2.describeSecurityGroups(describeSecurityGroupsRequest.withGroupNames(groupName));
                 newGroupId = dsgResult.getSecurityGroups().get(0).getGroupId();
                 return newGroupId;
             } catch(AmazonServiceException ase1) {
-            	System.out.println(ase1.getMessage());
+            	Utility.logPrint(ase1.getMessage());
             	System.exit(0);
             }
             
@@ -313,36 +273,67 @@ public class AccessEC2 {
 		AuthorizeSecurityGroupIngressRequest authorizeSecurityGroupIngressRequest = new AuthorizeSecurityGroupIngressRequest();
 		authorizeSecurityGroupIngressRequest.withGroupName(groupName).withIpPermissions(ipPermission);
 		this.ec2.authorizeSecurityGroupIngress(authorizeSecurityGroupIngressRequest);
-		System.out.println("Security Group Id: " + newGroupId);
+		Utility.logPrint("[Info]: Security Group Id: " + newGroupId);
 		return newGroupId;
 	}
 
-	//get state by id
-	public String getStateById(String instancId){
-		if (instancId == null) {
-			System.out.println("[Error]: Getting Instance Id failing.");
-			return null;
+
+	public ArrayList<String> getDNSById(ArrayList<String> instanceIds){
+		Utility.logPrint("[Info]: Getting instances DNSs by Ids");
+		ArrayList<String> instanceDNSs = new ArrayList<String>();
+		for (String instanceId: instanceIds) {
+			//only when state is running, dns is available.
+			while (true) {
+				String state = getStateById(instanceId);
+				if (state == null) {
+					Utility.logPrint("<" + instanceId + ">: id is inValid");
+					break;
+				} else if(state.equals("running")) {
+					String DNS = getDNSByIdWhenRunning(instanceId);
+					if (DNS != null && !DNS.equals("")) {
+						instanceDNSs.add(DNS);
+						Utility.logPrint("<" + instanceId + " DNS>: " + DNS);
+						break;
+					}
+				//pending is a normal state before running
+				} else if (state.equals("pending")) {
+					Utility.logPrint("<" + instanceId + ">: " + "Waiting for instance running from pending.");
+					Utility.timerS(10);
+				//other state will make DNS invalid forever.
+				} else if (state.equals("shutting-down")){
+					Utility.logPrint("<" + instanceId + ">: Instance is shutting-down. Waiting...");
+					Utility.timerS(30);
+				} else {
+					Utility.logPrint("<" + instanceId + ">: Instance is invalid. Cannot get DNS");
+					break;
+				}
+			}
 		}
+
+		return instanceDNSs;
+	}
+	public String getStateById(String instanceId){
 		//Obtain a list of Reservations
 		List<Reservation> reservations = this.ec2.describeInstances().getReservations();
-		for (Reservation reservation:reservations) {
+		for (Reservation reservation: reservations) {
 			for (Instance instance: reservation.getInstances()) {
-				if (instance.getInstanceId().equals(instancId)) {
+				if (instance.getInstanceId().equals(instanceId)) {
 					//only when state is running, dns is available.
-					if(instance.getState().getName().equals("running")) {
-						return "running";
-					//pending is a normal state before running
-					} else if (instance.getState().getName().equals("pending")) {
-						return "pending";
-					//other state will make DNS invalid forever.
-					}else if (instance.getState().getName().equals("terminated")) {
-						return "terminated";
-					//other state will make DNS invalid forever.
-					} else if (instance.getState().getName().equals("shutting-down")){
-						return "shutting-down";
-					} else {
-						return null;
-					}
+					return instance.getState().getName();
+				}
+			}
+		}
+		return null;
+	}
+	//Before get DNS, the id must by valid and state should be running;
+	public String getDNSByIdWhenRunning(String instanceId){
+		//Obtain a list of Reservations
+		List<Reservation> reservations = this.ec2.describeInstances().getReservations();
+		for (Reservation reservation: reservations) {
+			for (Instance instance: reservation.getInstances()) {
+				if (instance.getInstanceId().equals(instanceId)) {
+					//only when state is running, dns is available.
+					return instance.getPublicDnsName();
 				}
 			}
 		}
