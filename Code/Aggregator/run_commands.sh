@@ -4,11 +4,24 @@ PUBLIC_HOSTNAME="$(curl http://169.254.169.254/latest/meta-data/public-hostname 
 USERNAME=cloudMonitor
 PASSWORD=cloudMonitor
 
+# helper function for inserting data into database
+insert_data() {
+	sqlCmd="USE cloudMonitorDB; "
+	sqlCmd=$sqlCmd"CREATE TABLE IF NOT EXISTS \`"$1"\` ("
+	sqlCmd=$sqlCmd"\`timestamp\` BIGINT UNSIGNED NOT NULL,"
+	sqlCmd=$sqlCmd"\`value\` DOUBLE NOT NULL);"
+	mysql -u $USERNAME -p$PASSWORD -s -N -e "$sqlCmd"
+
+	sqlCmd="USE cloudMonitorDB; "
+	sqlCmd=$sqlCmd"INSERT INTO \`"$1"\` VALUES ("$2", "$3");"
+	mysql -u $USERNAME -p$PASSWORD -s -N -e "$sqlCmd"
+}
+
 # mkdir for each instance
 active_nodes_file="active_nodes"
 while IFS='' read -r line || [[ -n $line ]]
 do
-    mkdir "$line"
+    mkdir "/home/ec2-user/data/"$line
 done < $active_nodes_file
 
 # upload data and log stuck running instances
@@ -28,7 +41,8 @@ do
 			filePathArray=(${file//// })
 			filename=${filePathArray[${#filePathArray[@]}-1]}
 			instanceDNS=${filePathArray[${#filePathArray[@]}-2]}
-			s3cmd put $filename "s3://CloudMonitor/data/"$instanceDNS"/"filename
+			echo "s3cmd put "$instanceDNS"/"$filename"..."
+			# s3cmd put $filename "s3://CloudMonitor/data/"$instanceDNS"/"$filename
 
 			python get_data.py < $file > $file"_clean"
 			IFS=";" read -r data < $file"_clean"
@@ -37,6 +51,9 @@ do
 			insert_data $instanceDNS"_MEMR" ${dataArray[2]} ${dataArray[3]}
 			insert_data $instanceDNS"_MEMW" ${dataArray[4]} ${dataArray[5]}
 			insert_data $instanceDNS"_DIO" ${dataArray[6]} ${dataArray[7]}
+			rm $file
+			rm $file"_clean"
+		done
 	else
 		no_data[$no_data_count]=$folder
 		no_data_count=$(expr $no_data_count + 1)
@@ -49,20 +66,9 @@ do
 	if [[ $(echo ${no_data[*]}) =~ .*$line.* ]]
 	then 
 		echo "WARNING instances $line did not finish test in time"
-	else 
-		sh command.sh "$line" $PUBLIC_HOSTNAME
+	else
+		sh command.sh "$line" $PUBLIC_HOSTNAME &
 	fi
 done < $active_nodes_file
 
-# helper function for inserting data into database
-insert_data() {
-	sqlCmd="USE cloudMonitorDB; "
-	sqlCmd=$sqlCmd"CREATE TABLE IF NOT EXISTS \`"$1"\` ("
-	sqlCmd=$sqlCmd"\`timestamp\` BIGINT UNSIGNED NOT NULL,"
-	sqlCmd=$sqlCmd"\`value\` DOUBLE NOT NULL);"
-	mysql -u $USERNAME -p$PASSWORD -s -N -e "$sqlCmd"
 
-	sqlCmd="USE cloudMonitorDB; "
-	sqlCmd=$sqlCmd"INSERT INTO \`"$1"\` VALUES ("$2", "$3");"
-	mysql -u $USERNAME -p$PASSWORD -s -N -e "$sqlCmd"
-}

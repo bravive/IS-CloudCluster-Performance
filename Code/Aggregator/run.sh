@@ -18,5 +18,5 @@ echo "----------------DIO----------------" >> $FILENAME
 echo $(date +%Y%m%d%H%M%S) >> $FILENAME
 ./sysbench-0.4.12/sysbench/sysbench --test=fileio --file-total-size=50G --file-test-mode=rndrw --max-time=300 --max-requests=0 run >> $FILENAME
 
-scp -i is.pem $FILENAME ec2-user@$1:/home/ec2-user/data/$PUBLIC_HOSTNAME/.
+scp -i is.pem -o "StrictHostKeyChecking no" $FILENAME ec2-user@$1:/home/ec2-user/data/$PUBLIC_HOSTNAME/.
 rm $FILENAME
