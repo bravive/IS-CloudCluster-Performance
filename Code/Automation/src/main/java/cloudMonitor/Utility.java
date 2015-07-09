@@ -51,11 +51,13 @@ public class Utility {
 			while(true) {
 				Process p = r.exec("sh " + scriptPathName + " " + hostName + " " + filePath);
 				BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-				String inputLine;
-				if ((inputLine = in.readLine()).compareTo("OK") == 0) {
-					logPrint(inputLine);
+				String inputLine = in.readLine();
+				if (inputLine.compareTo("OK") == 0) {
+					logPrint("[Info]: SCP send successfully.");
 					in.close();
 					break;
+				} else {
+					logPrint("[Error]: SCP send failing.");
 				}
 				in.close();
 				if(--iteration < 0) {
