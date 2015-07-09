@@ -13,9 +13,7 @@ class GetBashOutput {
 					in.close();
 					break;
 				}
-				else {
-					System.out.println(inputLine);
-				}
+				in.close();
 			}
 		} catch (IOException e) {
 			System.out.println(e);

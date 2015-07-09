@@ -1,6 +1,10 @@
 import java.util.ArrayList;
+import java.util.List;
 
 public class Automation {
+	static public VmCluster aggCluster = new VmCluster();
+	static public VmCluster nodCluster = new VmCluster();
+	static Object lock = new Object();
 	public static void main(String[] args) {
 		Arguments allArguments = ParseArgument.parseArguments(args);
 		//Utility.logPrint(allArguments.toString());
@@ -30,7 +34,9 @@ public class Automation {
 		/**************Begin Two monitoring thread(aggregator && nodes)**************/
 		Monitor mAgg = new Monitor();
 		Monitor mNod = new Monitor();
-		mAgg.withAccessEC2(EC2handler)
+		Coordinator coordinator = new Coordinator();
+		mAgg
+			.withAccessEC2(EC2handler)
 			.withAMIId(aggAmiId)
 			.withInstanceType(aggInstanceType)
 			.withMaxInstanceNum(aggMaxInstanceNum)
@@ -39,8 +45,9 @@ public class Automation {
 			.withZone(aggZone)
 			.withTagName("Monitor-Automation")
 			.withTagValue("Aggreator")
-			.withOutputPath(aggOutputPath);
-		mNod.withAccessEC2(EC2handler)
+			.withVMCluster(aggCluster);
+		mNod
+			.withAccessEC2(EC2handler)
 			.withAMIId(nodAmiId)
 			.withInstanceType(nodInstanceType)
 			.withMaxInstanceNum(nodMaxInstanceNum)
@@ -49,15 +56,56 @@ public class Automation {
 			.withZone(nodZone)
 			.withTagName("Monitor-Automation")
 			.withTagValue("Slave Nodes")
-			.withOutputPath(nodOutputPath);
-		Thread aggregatorMonitor = new Thread(mAgg, "Aggregator Monitor");
-		Thread nodesMonitor = new Thread(mNod, "Nodes Monitor");
-		aggregatorMonitor.start();
-		nodesMonitor.start();
+			.withVMCluster(nodCluster);
+		coordinator
+			.withAggOutputPath(aggOutputPath)
+			.withNodOutputPath(nodOutputPath);
+		Thread aggMonitorThread = new Thread(mAgg, "Aggregator Monitor");
+		Thread nodMonitorThread = new Thread(mNod, "Nodes Monitor");
+		Thread coordinatorThread = new Thread(coordinator, "Coordinator");
+		aggMonitorThread.start();
+		nodMonitorThread.start();
+		coordinatorThread.start();
+	}
+}
+class Coordinator implements Runnable {
+	private String aggOutputPath = "";
+	private String nodOutputPath = "";
+
+	public void run() {
+		try {
+			synchronized(Automation.lock) {
+				while(true){
+					Automation.lock.wait();
+					if (Automation.aggCluster.isActive() && Automation.nodCluster.isActive() 
+							&& (Automation.aggCluster.isUpdated() ||  Automation.nodCluster.isUpdated())) {
+						//Write to File
+						Utility.writeListToFile(Automation.aggCluster.getDNSs(), this.aggOutputPath);
+						Utility.writeListToFile(Automation.aggCluster.getDNSs(), this.nodOutputPath);
+						//TODO
+						
+						//After Send
+						Automation.aggCluster.setNotUpdated();
+						Automation.nodCluster.setNotUpdated();
+					}
+				}
+			}
+		} catch (Exception e) {
+			Utility.logPrint(e.toString());
+		}
+	}
+	public Coordinator withAggOutputPath(String aggOutputPath) {
+		this.aggOutputPath = aggOutputPath;
+		return this;
+	}
+	public Coordinator withNodOutputPath(String nodOutputPath) {
+		this.nodOutputPath = nodOutputPath;
+		return this;
 	}
 }
 //Monitor thread implements the real launching, tagging and monitoring process.
 class Monitor implements Runnable {
+	
 	private AccessEC2 EC2handler = null;
 	private String securityGroup = "";
 	private String amiId = "";
@@ -67,47 +115,8 @@ class Monitor implements Runnable {
 	private String productDescribe = "Linux/UNIX";	//default
 	private String tagName = "IS-ESE";
 	private String tagValue = "Automation";
-	private String outputPath = "";
-	public Monitor withAccessEC2(AccessEC2 EC2handler) {
-		this.EC2handler = EC2handler;
-		return this;
-	}
-	public Monitor withSecurityGroup(String securityGroup) {
-		this.securityGroup = securityGroup;
-		return this;
-	}
-	public Monitor withAMIId(String amiId) {
-		this.amiId = amiId;
-		return this;
-	}
-	public Monitor withMaxInstanceNum(int maxInstanceNum) {
-		this.maxInstanceNum = maxInstanceNum;
-		return this;
-	}
-	public Monitor withZone(String zone) {
-		this.zone = zone;
-		return this;
-	}
-	public Monitor withInstanceType(String instanceType) {
-		this.instanceType = instanceType;
-		return this;
-	}
-	public Monitor withProductDescribe(String productDescribe) {
-		this.productDescribe = productDescribe;
-		return this;
-	}
-	public Monitor withTagName(String tagName) {
-		this.tagName = tagName;
-		return this;
-	}
-	public Monitor withTagValue(String tagValue) {
-		this.tagValue = tagValue;
-		return this;
-	}
-	public Monitor withOutputPath(String outputPath) {
-		this.outputPath = outputPath;
-		return this;
-	}
+	private VmCluster vmCluster = null;
+
 	public void run() {
 		/**************Get initial price**************/
 		String minSpotPrice = EC2handler.getHistoryPrice(this.instanceType, this.zone, this.productDescribe);
@@ -139,7 +148,13 @@ class Monitor implements Runnable {
 			//After getting DNS, all instances should be running. 
 			ArrayList<String> DNSs = EC2handler.getDNSById(instanceIds);
 			if (DNSs.size() == instanceIds.size()) {
-				Utility.writeListToFile(DNSs, this.outputPath);
+				synchronized(Automation.lock) {
+					
+					this.vmCluster.updateDNSs(DNSs);
+					this.vmCluster.setActive();
+					this.vmCluster.setUpdated();
+					Automation.lock.notify();	//Only allow one thread to to use this lock at the same time
+				}
 			}
 			
 			//Monitor instance
@@ -183,9 +198,82 @@ class Monitor implements Runnable {
 				terminatedCount = 0;
 				Utility.timerS(60);
 			}
+			synchronized(Automation.lock) {
+				this.vmCluster.setNotActive();
+			}
 			//when the second while break, that means there is at least one instance is terminated.
 			//Only such situation is checked twice by circle variable, the program will go out to 
 			//the outer while loop, and then begin a new spot instance progress.
 		}
+	}
+	public Monitor withAccessEC2(AccessEC2 EC2handler) {
+		this.EC2handler = EC2handler;
+		return this;
+	}
+	public Monitor withSecurityGroup(String securityGroup) {
+		this.securityGroup = securityGroup;
+		return this;
+	}
+	public Monitor withAMIId(String amiId) {
+		this.amiId = amiId;
+		return this;
+	}
+	public Monitor withMaxInstanceNum(int maxInstanceNum) {
+		this.maxInstanceNum = maxInstanceNum;
+		return this;
+	}
+	public Monitor withZone(String zone) {
+		this.zone = zone;
+		return this;
+	}
+	public Monitor withInstanceType(String instanceType) {
+		this.instanceType = instanceType;
+		return this;
+	}
+	public Monitor withProductDescribe(String productDescribe) {
+		this.productDescribe = productDescribe;
+		return this;
+	}
+	public Monitor withTagName(String tagName) {
+		this.tagName = tagName;
+		return this;
+	}
+	public Monitor withTagValue(String tagValue) {
+		this.tagValue = tagValue;
+		return this;
+	}
+	public Monitor withVMCluster(VmCluster vmCluster) {
+		this.vmCluster = vmCluster;
+		return this;
+	}
+}
+class VmCluster {
+	private ArrayList<String> DNSs = new ArrayList<String>();
+	private boolean isActive = false;
+	private boolean isUpdated = false;
+	public ArrayList<String> getDNSs() {
+		return this.DNSs;
+	}
+	public boolean isActive() {
+		return this.isActive;
+	}
+	public boolean isUpdated() {
+		return this.isUpdated;
+	}
+	public void updateDNSs(List<String> list) {
+		DNSs.clear();
+		DNSs.addAll(list);
+	}
+	public void setActive() {
+		this.isActive = true;
+	}
+	public void setNotActive() {
+		this.isActive = false;
+	}
+	public void setUpdated() {
+		this.isUpdated = true;
+	}
+	public void setNotUpdated() {
+		this.isUpdated = false;
 	}
 }

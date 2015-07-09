@@ -18,10 +18,10 @@ public class ParseArgument {
 		try {
 			Options options = new Options();
 			/**Define all options for arguments*******/
-			/**boolean Option*/
+			/**boolean Option(eg. -h)*/
 			Option exec = new Option( "e", "executing monitoring");
 			Option help = new Option( "h", "print help information" );
-			/**Argument Option*/
+			/**Argument Option(eg. -aMax value)*/
 			Option aMax = OptionBuilder.withArgName( "aMaxNum" ).hasArg().withDescription("Specify AGGREGATOR maximal number. \n[Default: " + allArguments.aggMaxInstanceNum + "]").create( "aMax");
 			Option nMax = OptionBuilder.withArgName( "nMaxNum" ).hasArg().withDescription("Specify NODES maximal number. \n[Default: " + allArguments.nodMaxInstanceNum + "]").create( "nMax");
 			Option aAMI = OptionBuilder.withArgName( "aAMIID" ).hasArg().withDescription("Specify AGGREGATOR AMI ID. \n[Default: " + allArguments.aggAmiId + "]").create( "aAMI");
@@ -33,7 +33,7 @@ public class ParseArgument {
 			Option securityGroup = OptionBuilder.withArgName( "securityGroup" ).hasArg().withDescription("Specify security group name. \n[Default: " + allArguments.securityGroup + "]").create( "securityGroup");
 			Option productDescribe = OptionBuilder.withArgName( "productDescribe" ).hasArg().withDescription("Specify VM product describe. \n[Default: " + allArguments.productDescribe + "]").create( "productDescribe");
 			
-			/**Property Option*/
+			/**Property Option(eg. -DaccessKeyId=XXXX)*/
 			Option property  = OptionBuilder.withArgName("property=value" ).hasArgs(2).withValueSeparator().withDescription( "Specify access key id BY \"accessKeyId\"; \nSpecify secret accesss key id BY \"secretAccesssKey\";" ).create( "D" );
 			
 			/**All option to options for parsing*******/
