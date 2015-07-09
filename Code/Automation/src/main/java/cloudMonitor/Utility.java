@@ -16,30 +16,32 @@ public class Utility {
 			logPrint(e.toString());
 		}
 	}
-	public static void writeListToFile(ArrayList<String> list, String filePath){
+	public static String writeListToFile(ArrayList<String> list, String fileName){
+		String absPath = "";
 		try {
 		    File theDir = new File("watch");
 		    if (!theDir.exists()) {
 		    	theDir.mkdir();
 			}	
-		    String path = new File("watch/" + filePath).getAbsolutePath();        
-			FileWriter fw = new FileWriter(path,false);
+		    absPath = new File("watch/" + fileName).getAbsolutePath();        
+			FileWriter fw = new FileWriter(absPath,false);
 			for (String s: list) {
-				logPrint("[Info]: WRITE \"" + s + "\" to " + filePath);
+				logPrint("[Info]: WRITE \"" + s + "\" to " + fileName);
 				fw.write(s);
 				fw.write("\n");
 			}
 			fw.close();
 		} catch ( Exception e) {
-			e.printStackTrace();
-		}		
+			logPrint(e.toString());
+		}	
+		return absPath;
 	}
 	public static void logPrint(String string) {
 		Date dNow = new Date( );
 		SimpleDateFormat ft = new SimpleDateFormat ("yyyy/MM/dd HH:mm:ss zzz");
 		System.out.println("[" + ft.format(dNow) + "]==" + string);
 	}
-	public void scpFileByBash(String hostName, String filePath) {
+	public static void scpFileByBash(String hostName, String filePath) {
 		int tatalDuration = 10;	//minute
 		int eachSleep = 30; //second
 		int iteration = tatalDuration * 60 / eachSleep;	//times
@@ -50,7 +52,7 @@ public class Utility {
 				Process p = r.exec("sh " + scriptPathName + " " + hostName + " " + filePath);
 				BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				String inputLine;
-				if ((inputLine = in.readLine()) == "OK") {
+				if ((inputLine = in.readLine()).compareTo("OK") == 0) {
 					logPrint(inputLine);
 					in.close();
 					break;

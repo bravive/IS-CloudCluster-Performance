@@ -22,7 +22,7 @@ public class Automation {
 		String aggZone = allArguments.aggZone;
 		String aggInstanceType = allArguments.aggInstanceType;
 		String aggProductDescribe = allArguments.productDescribe;
-		String aggOutputPath = allArguments.aggOutputPath;
+		String aggFileName = allArguments.aggFileName;
 		/**************Nodes Initial Variable**************/
 		String nodSecurityGroup = allArguments.securityGroup;
 		String nodAmiId =allArguments.nodAmiId; //"ami-0e0b1166";
@@ -30,7 +30,7 @@ public class Automation {
 		String nodZone = allArguments.nodZone;
 		String nodInstanceType = allArguments.nodInstanceType;
 		String nodProductDescribe = allArguments.productDescribe;
-		String nodOutputPath = allArguments.nodOutputPath;
+		String nodFileName = allArguments.nodFileName;
 		/**************Begin Two monitoring thread(aggregator && nodes)**************/
 		Monitor mAgg = new Monitor();
 		Monitor mNod = new Monitor();
@@ -58,8 +58,8 @@ public class Automation {
 			.withTagValue("Slave Nodes")
 			.withVMCluster(nodCluster);
 		coordinator
-			.withAggOutputPath(aggOutputPath)
-			.withNodOutputPath(nodOutputPath);
+			.withAggOutputPath(aggFileName)
+			.withNodOutputPath(nodFileName);
 		Thread aggMonitorThread = new Thread(mAgg, "Aggregator Monitor");
 		Thread nodMonitorThread = new Thread(mNod, "Nodes Monitor");
 		Thread coordinatorThread = new Thread(coordinator, "Coordinator");
@@ -69,8 +69,8 @@ public class Automation {
 	}
 }
 class Coordinator implements Runnable {
-	private String aggOutputPath = "";
-	private String nodOutputPath = "";
+	private String aggFileName = "";
+	private String nodFileName = "";
 
 	public void run() {
 		try {
@@ -80,10 +80,12 @@ class Coordinator implements Runnable {
 					if (Automation.aggCluster.isActive() && Automation.nodCluster.isActive() 
 							&& (Automation.aggCluster.isUpdated() ||  Automation.nodCluster.isUpdated())) {
 						//Write to File
-						Utility.writeListToFile(Automation.aggCluster.getDNSs(), this.aggOutputPath);
-						Utility.writeListToFile(Automation.aggCluster.getDNSs(), this.nodOutputPath);
-						//TODO
-						
+						//Utility.writeListToFile(Automation.aggCluster.getDNSs(), this.aggFileName);
+						String absPath = Utility.writeListToFile(Automation.nodCluster.getDNSs(), this.nodFileName);
+						//Send via bash script (For now, there is just ONE aggeragator)
+						for (String s: Automation.aggCluster.getDNSs()) {
+							Utility.scpFileByBash(s, absPath);
+						}
 						//After Send
 						Automation.aggCluster.setNotUpdated();
 						Automation.nodCluster.setNotUpdated();
@@ -95,11 +97,11 @@ class Coordinator implements Runnable {
 		}
 	}
 	public Coordinator withAggOutputPath(String aggOutputPath) {
-		this.aggOutputPath = aggOutputPath;
+		this.aggFileName = aggOutputPath;
 		return this;
 	}
 	public Coordinator withNodOutputPath(String nodOutputPath) {
-		this.nodOutputPath = nodOutputPath;
+		this.nodFileName = nodOutputPath;
 		return this;
 	}
 }

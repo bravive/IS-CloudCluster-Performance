@@ -128,13 +128,13 @@ class Arguments {
 	int aggMaxInstanceNum = 1;
 	String aggZone = "us-east-1d";
 	String aggInstanceType = "m3.medium";
-	String aggOutputPath = "AggregatorDNS.info";
+	String aggFileName = "AggregatorDNS.info";
 	/**************Nodes Initial Variable**************/
 	String nodAmiId = "ami-dbfc07b0"; //"ami-0e0b1166";
 	int nodMaxInstanceNum = 2;
 	String nodZone = "us-east-1d";
 	String nodInstanceType = "m3.medium";
-	String nodOutputPath = "NodesDNS.info";
+	String nodFileName = "NodesDNS.info";
 	public String toString() {
 		String rs = "\n";
 		rs += "-------All Arguments information------\n";
@@ -143,17 +143,17 @@ class Arguments {
 		rs += "securityGroup: " + this.securityGroup + "\n";
 		rs += "productDescribe: " + this.productDescribe + "\n";
 		
-		rs += "aggSmiId: " + this.aggAmiId + "\n";
+		rs += "aggAmiId: " + this.aggAmiId + "\n";
 		rs += "aggMaxInstanceNum: " + this.aggMaxInstanceNum + "\n";
 		rs += "aggZone: " + this.aggZone + "\n";
 		rs += "aggInstanceType: " + this.aggInstanceType + "\n";
-		rs += "aggOutputPath: " + this.aggOutputPath + "\n";
+		rs += "aggFileName: " + this.aggFileName + "\n";
 		
 		rs += "nodAmiId: " + this.nodAmiId + "\n";
 		rs += "nodMaxInstanceNum: " + this.nodMaxInstanceNum + "\n";
 		rs += "nodZone: " + this.nodZone + "\n";
 		rs += "nodInstanceType: " + this.nodInstanceType + "\n";
-		rs += "nodInstanceType: " + this.nodInstanceType + "\n";
+		rs += "nodFileName: " + this.nodFileName + "\n";
 		rs += "-------------All Arguments End----------\n";
 		return rs;
 	}
