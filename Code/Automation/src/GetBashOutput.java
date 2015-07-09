@@ -4,11 +4,13 @@ class GetBashOutput {
 	public void getBashOutput(String hostname, String filename) {
 		try {
 			Runtime r = Runtime.getRuntime();
-			while(true) {
+			boolean flag = true;
+			while(flag) {
 				Process p = r.exec("sh coordinator.sh " + hostname + " " + filename);
 				BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				String inputLine;
-				if ((inputLine = in.readLine()) == "OK") {
+				if ((inputLine = in.readLine()).compareTo("OK") == 0) {
+					flag = false;
 					System.out.println(inputLine);
 					in.close();
 					break;
@@ -25,6 +27,6 @@ class GetBashOutput {
 class GetBashOutputTest {
 	public static void main(String[] args) {
 		GetBashOutput test = new GetBashOutput();
-		test.getBashOutput("ec2-52-6-181-148.compute-1.amazonaws.com", "crontab");
+		test.getBashOutput("ec2-52-2-41-239.compute-1.amazonaws.com:/home/ec2-user", "crontab");
 	}
 }
