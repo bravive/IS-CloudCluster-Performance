@@ -172,11 +172,25 @@ class Monitor implements Runnable {
 			//After getting DNS, all instances should be running. 
 			ArrayList<String> DNSs = EC2handler.getDNSById(instanceIds);
 			if (DNSs.size() == instanceIds.size()) {
+				ArrayList<String> oldDNSs;
 				synchronized(Automation.lock) {
+					oldDNSs = new ArrayList<String>(this.vmCluster.getDNSs());
 					this.vmCluster.updateDNSs(DNSs);
 					this.vmCluster.setActive();
 					this.vmCluster.setUpdated();
+					/**Updata status in Mysql database*/
 					Automation.lock.notify();	//Only allow one thread to to use this lock at the same time
+				}
+				
+				/**Update MySQL database status*/
+				MysqlConnection conn = new MysqlConnection();
+				for (String DNS: oldDNSs) {
+					if (!this.vmCluster.getDNSs().contains(DNS)) {
+						conn.updateInstanceInfo(DNS, "Terminated");
+					}
+				}
+				for (String DNS: this.vmCluster.getDNSs()) {
+					conn.updateInstanceInfo(DNS, "Running");
 				}
 			}
 			
@@ -195,10 +209,11 @@ class Monitor implements Runnable {
 					if (state.equals("running")) {
 						Utility.logPrint("<" + instanceId + ">: " +  "is running.");
 						runningCount++;
-						//if all instances are running, all ids should be added into the a
-						//array list. There is an instance terminated, the size of the array
-						//will be less than the maximum of the launching number, which will
-						//be used when running spot instance.
+						/**if all instances are running, all ids should be added into the a
+						 * array list. There is an instance terminated, the size of the array
+						 * will be less than the maximum of the launching number, which will
+						 * be used when running spot instance.
+						 */
 						temp.add(instanceId);
 					} else if (state.equals("pending")){
 						Utility.logPrint("<" + instanceId + ">: " +  "is pending.");
@@ -221,9 +236,10 @@ class Monitor implements Runnable {
 				terminatedCount = 0;
 				Utility.timerS(60);
 			}
-			//when the second while break, that means there is at least one instance is terminated.
-			//Only such situation is checked twice by circle variable, the program will go out to 
-			//the outer while loop, and then begin a new spot instance progress.
+			/**when the second while break, that means there is at least one instance is terminated.
+			 * Only such situation is checked twice by circle variable, the program will go out to 
+			 * the outer while loop, and then begin a new spot instance progress.
+			 */
 			synchronized(Automation.lock) {
 				this.vmCluster.setNotActive();
 			}
