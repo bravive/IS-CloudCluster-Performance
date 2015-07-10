@@ -2,14 +2,14 @@
 #param1: master's public ip address
 
 PUBLIC_HOSTNAME="$(curl http://169.254.169.254/latest/meta-data/public-hostname 2>/dev/null)"
+ACTIVE_NODES_FILE="NodesDNS.info"
 USERNAME=cloudMonitor
 PASSWORD=cloudMonitor
 MASTER_IP=$1
-ACTIVE_NODES_FILE="NodesDNS.info"
 
 # helper function for inserting data into database
-#param1: tableName
-#param2&3: values
+# param1: tableName
+# param2&3: values
 insert_data() {
 	sqlCmd="USE cloudMonitorDB; "
 	sqlCmd=$sqlCmd"CREATE TABLE IF NOT EXISTS \`"$1"\` ("
@@ -21,12 +21,6 @@ insert_data() {
 	sqlCmd=$sqlCmd"INSERT INTO \`"$1"\` VALUES ("$2", "$3");"
 	mysql -h $MASTER_IP -u $USERNAME -p$PASSWORD -s -N -e "$sqlCmd"
 }
-
-# mkdir for each instance
-while IFS='' read -r line || [[ -n $line ]]
-do
-    mkdir "/home/ec2-user/data/"$line
-done < $ACTIVE_NODES_FILE
 
 # upload data and log stuck running instances
 no_data[0]=0
