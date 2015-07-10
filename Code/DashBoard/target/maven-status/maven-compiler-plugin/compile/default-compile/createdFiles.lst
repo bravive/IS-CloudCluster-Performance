@@ -1,0 +1,12 @@
+DashBoard.class
+DIO.class
+MEMR.class
+SelectedInstance.class
+BasePageServlet.class
+getStatusServlet.class
+Instances.class
+Performances.class
+InstanceStatus.class
+MEMW.class
+getPerformanceServlet.class
+CPU.class
