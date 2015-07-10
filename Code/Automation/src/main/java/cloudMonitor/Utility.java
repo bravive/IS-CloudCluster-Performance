@@ -60,10 +60,10 @@ public class Utility {
 		System.out.println("[" + ft.format(dNow) + "]==" + string);
 	}
 	/**SSH to exec with parameters
-	 * param1: remote host name(DNS) <hostName>
-	 * param2: remote executable script <remoteScriptName>
-	 * param3: sent information, eg. mySql_ip <mySqlIP>
-	 * mySqlIP*/
+	 * @param: remote host name(DNS) <hostName>
+	 * @param: remote executable script <remoteScriptName>
+	 * @param: sent information, eg. mySql_ip <mySqlIP>
+	 **/
 	public static boolean remoteExec(String hostName, String remoteScriptName, String mySqlIP) {
 		int tatalDuration = 10;	//minute
 		int eachSleep = 30; //second
@@ -94,9 +94,9 @@ public class Utility {
 		return null;
 	}
 	/**SCP to a remote file with parameters
-	 * param1: remote host name(DNS) <hostName>
-	 * param2: destination <directory>
-	 * param3: source <filePath>
+	 * @param: remote host name(DNS) <hostName>
+	 * @param: destination <directory>
+	 * @param: source <filePath>
 	 * */
 	public static boolean scpFileByBash(String hostName, String directory, String filePath) {
 		int tatalDuration = 10;	//minute
