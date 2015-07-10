@@ -19,11 +19,11 @@ public class Utility {
 	public static String writeListToFile(ArrayList<String> list, String fileName){
 		String absPath = "";
 		try {
-		    File theDir = new File("watch");
+		    File theDir = new File("resource");
 		    if (!theDir.exists()) {
 		    	theDir.mkdir();
 			}	
-		    absPath = new File("watch/" + fileName).getAbsolutePath();        
+		    absPath = new File("resource/" + fileName).getAbsolutePath();        
 			FileWriter fw = new FileWriter(absPath,false);
 			for (String s: list) {
 				logPrint("[Info]: WRITE \"" + s + "\" to " + fileName);
@@ -36,37 +36,100 @@ public class Utility {
 		}	
 		return absPath;
 	}
+	public static String writeToFile(String string, String fileName){
+		String absPath = "";
+		try {
+		    File theDir = new File("resource");
+		    if (!theDir.exists()) {
+		    	theDir.mkdir();
+			}	
+		    absPath = new File("resource/" + fileName).getAbsolutePath();        
+			FileWriter fw = new FileWriter(absPath,false);
+			logPrint("[Info]: WRITE \"" + string + "\" to " + fileName);
+			fw.write(string);
+			fw.write("\n");
+			fw.close();
+		} catch ( Exception e) {
+			logPrint(e.toString());
+		}	
+		return absPath;
+	}
 	public static void logPrint(String string) {
 		Date dNow = new Date( );
 		SimpleDateFormat ft = new SimpleDateFormat ("yyyy/MM/dd HH:mm:ss zzz");
 		System.out.println("[" + ft.format(dNow) + "]==" + string);
 	}
-	public static void scpFileByBash(String hostName, String filePath) {
+	/**SSH to exec with parameters
+	 * param1: remote host name(DNS) <hostName>
+	 * param2: remote executable script <remoteScriptName>
+	 * param3: sent information, eg. mySql_ip <mySqlIP>
+	 * mySqlIP*/
+	public static boolean remoteExec(String hostName, String remoteScriptName, String mySqlIP) {
+		int tatalDuration = 10;	//minute
+		int eachSleep = 30; //second
+		int iteration = tatalDuration * 60 / eachSleep;	//times
+		String scriptPathName = "sshExec.sh";
+		while(true) {
+			String cmd = "sh " + scriptPathName + " " + hostName + " " + remoteScriptName + " " + mySqlIP;
+			String inputLine = execBach(cmd);
+			if (inputLine.compareTo("OK") == 0) {
+				logPrint("[Info]: SSH exec successfully.");
+				return true;
+			} else {
+				logPrint("[Error]: SSH exec failing.");
+			}
+			if(--iteration < 0) {
+				return false;
+			}
+			timerS(eachSleep);
+		}
+	} 
+	
+	public static String getLocalIp() { 
+		String cmd = "curl http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null";
+		String ip = execBach(cmd);
+		if (ip.matches("^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})$")) {
+			return ip;
+		}
+		return null;
+	}
+	/**SCP to a remote file with parameters
+	 * param1: remote host name(DNS) <hostName>
+	 * param2: destination <directory>
+	 * param3: source <filePath>
+	 * */
+	public static boolean scpFileByBash(String hostName, String directory, String filePath) {
 		int tatalDuration = 10;	//minute
 		int eachSleep = 30; //second
 		int iteration = tatalDuration * 60 / eachSleep;	//times
 		String scriptPathName = "scpSend.sh";
+		while(true) {
+			String cmd = "sh " + scriptPathName + " " + hostName + " " + directory + " " + filePath;
+			String inputLine = execBach(cmd);
+			if (inputLine.compareTo("OK") == 0) {
+				logPrint("[Info]: SCP send successfully.");
+				return true;
+			} else {
+				logPrint("[Error]: SCP send failing.");
+			}
+			if(--iteration < 0) {
+				return false;
+			}
+			timerS(eachSleep);
+		}
+	}	
+	public static String execBach(String cmd) {
+		String inputLine = "";
 		try {
 			Runtime r = Runtime.getRuntime();
-			while(true) {
-				Process p = r.exec("sh " + scriptPathName + " " + hostName + " " + filePath);
-				BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-				String inputLine = in.readLine();
-				if (inputLine.compareTo("OK") == 0) {
-					logPrint("[Info]: SCP send successfully.");
-					in.close();
-					break;
-				} else {
-					logPrint("[Error]: SCP send failing.");
-				}
-				in.close();
-				if(--iteration < 0) {
-					break;
-				}
-				timerS(eachSleep);
-			}
+			Process p = r.exec(cmd);
+			logPrint("[Exec]: " + cmd);
+			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			inputLine = in.readLine();
+			in.close();
 		} catch (Exception e) {
 			logPrint(e.toString());
 		}
-	}	
+		return inputLine;
+	}
 }
