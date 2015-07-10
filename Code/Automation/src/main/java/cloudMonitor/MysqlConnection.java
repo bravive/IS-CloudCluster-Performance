@@ -9,8 +9,8 @@ public class MysqlConnection {
 	private static final String DB_URL = "jdbc:mysql://localhost/cloudMonitorDB";
 	private static final String USER = "root";
 	private static final String PASS = "";
-	private static final String insertSQL = "INSERT INTO `instanceInfo` (`instanceDNS`, `status`) VALUES (? , ?);";
-	private static final String updateSQL = "UPDATE `instanceInfo` SET `status` = ? WHERE `instanceDNS` = ?";
+	private static final String insertSQL = "INSERT INTO `instanceInfo` (`instanceDNS`, `status`) VALUES (?, ?);";
+	private static final String updateSQL = "UPDATE `instanceInfo` SET `status` = ? WHERE `instanceDNS` = ?;";
 	
 	private static Connection connection = null;
 	private static PreparedStatement statement = null;
@@ -34,7 +34,7 @@ public class MysqlConnection {
 	 * This method adds an instance into `instanceInfo` table
 	 * @param instanceDNS
 	 * @param status
-	 * @return
+	 * @return success
 	 */
 	public boolean insertInstanceInfo(String instanceDNS, String status) {
 		try {
@@ -55,7 +55,7 @@ public class MysqlConnection {
 	 * This method updates an instance's status according to DNS
 	 * @param instanceDNS
 	 * @param status
-	 * @return
+	 * @return success
 	 */
 	public boolean updateInstanceInfo(String instanceDNS, String status) {
 		try {
