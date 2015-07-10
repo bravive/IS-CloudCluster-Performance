@@ -69,9 +69,17 @@ public class Automation {
 	}
 }
 class Coordinator implements Runnable {
+	/**
+	 * resource/DNS.info		--> host:~/AggregatorDNS.info
+	 * resource/NodesDNS.info	--> host:~/NodesDNS.info
+	 * resource/MySQL.info		--> host:~/MySQL.info
+	 * ../conf/is.pem			--> host:~/is.pem
+	 * ../conf/s3cfg			--> host:~/.s3cfg
+	 * */
 	private String aggFileName = "";
 	private String nodFileName = "";
-
+	private String mySqlIP = Utility.getLocalIp();
+    private String absPathOfMysqlIpFile = Utility.writeToFile(mySqlIP, "MySQL.info");
 	public void run() {
 		try {
 			synchronized(Automation.lock) {
@@ -80,11 +88,25 @@ class Coordinator implements Runnable {
 					if (Automation.aggCluster.isActive() && Automation.nodCluster.isActive() 
 							&& (Automation.aggCluster.isUpdated() ||  Automation.nodCluster.isUpdated())) {
 						//Write to File
-						//Utility.writeListToFile(Automation.aggCluster.getDNSs(), this.aggFileName);
-						String absPath = Utility.writeListToFile(Automation.nodCluster.getDNSs(), this.nodFileName);
-						//Send via bash script (For now, there is just ONE aggeragator)
-						for (String s: Automation.aggCluster.getDNSs()) {
-							Utility.scpFileByBash(s, absPath);
+						String absPathOfAggFile = Utility.writeListToFile(Automation.aggCluster.getDNSs(), this.aggFileName);
+						String absPathOfNodFile = Utility.writeListToFile(Automation.nodCluster.getDNSs(), this.nodFileName);
+						//Send via bash script (For now, there is just ONE aggergator)
+						for (String host: Automation.aggCluster.getDNSs()) {
+							boolean success = Utility.scpFileByBash(host, "~/", absPathOfNodFile);
+							
+							/**If Aggregator is updated, beside nodes DNSs, it will also need
+							 * mysql ip(the master NOW!) and "conf/" materials(including s3cfg
+							 * and is.pem) If Aggregator first SCP success, then send all other 
+							 * configure files  as above.
+							 **/
+							if (success == true && Automation.aggCluster.isUpdated()) {
+								Utility.scpFileByBash(host, "~/", absPathOfAggFile);
+								Utility.scpFileByBash(host, "~/", this.absPathOfMysqlIpFile);
+								Utility.scpFileByBash(host, "~/", "../conf/is.pem");
+								Utility.scpFileByBash(host, "~/.s3cfg", "../conf/s3cfg");	
+								/**After file sending, should run program on Aggregator remotely as the first time */
+								Utility.remoteExec(host, "start_aggregator.sh", mySqlIP);
+							}
 						}
 						//After Send
 						Automation.aggCluster.setNotUpdated();
@@ -120,6 +142,7 @@ class Monitor implements Runnable {
 	private VmCluster vmCluster = null;
 
 	public void run() {
+		
 		/**************Get initial price**************/
 		String minSpotPrice = EC2handler.getHistoryPrice(this.instanceType, this.zone, this.productDescribe);
 		float betSpotPrice = 2 * Float.parseFloat(minSpotPrice);
@@ -129,7 +152,6 @@ class Monitor implements Runnable {
 		while (true) {
 			//spot and run instance
 			while(true) {
-				
 				if (instanceIds.size() < maxInstanceNum) {
 					minSpotPrice = EC2handler.getHistoryPrice(instanceType,zone, productDescribe);
 					betSpotPrice = 2 * Float.parseFloat(minSpotPrice);
@@ -151,7 +173,6 @@ class Monitor implements Runnable {
 			ArrayList<String> DNSs = EC2handler.getDNSById(instanceIds);
 			if (DNSs.size() == instanceIds.size()) {
 				synchronized(Automation.lock) {
-					
 					this.vmCluster.updateDNSs(DNSs);
 					this.vmCluster.setActive();
 					this.vmCluster.setUpdated();
@@ -200,12 +221,12 @@ class Monitor implements Runnable {
 				terminatedCount = 0;
 				Utility.timerS(60);
 			}
-			synchronized(Automation.lock) {
-				this.vmCluster.setNotActive();
-			}
 			//when the second while break, that means there is at least one instance is terminated.
 			//Only such situation is checked twice by circle variable, the program will go out to 
 			//the outer while loop, and then begin a new spot instance progress.
+			synchronized(Automation.lock) {
+				this.vmCluster.setNotActive();
+			}
 		}
 	}
 	public Monitor withAccessEC2(AccessEC2 EC2handler) {
