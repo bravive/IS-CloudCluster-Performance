@@ -33,7 +33,6 @@ class getPerformanceServlet extends HttpServlet {
 		String[] selectedFromClient = selectedInstance.selected;
 		Performances[] performances = new Performances[selectedFromClient.length];
 		for (int i = 0; i < selectedFromClient.length; i++) {        //loop for every selected instance
-			System.out.println(selectedFromClient[i]);
 			//access the database and get the performance value of the selected instances
 			Performances performance = new Performances();
 			performance.setId(selectedFromClient[i]);
@@ -44,7 +43,7 @@ class getPerformanceServlet extends HttpServlet {
 		         conn = DriverManager.getConnection(DB_URL,USER,PASS);
 		         stmt = conn.createStatement();
 		         String sql;
-		         sql = "SELECT * FROM " + selectedFromClient[i] + "_CPU";    //get all the cpu data from table
+		         sql = "SELECT * FROM " + "`" + selectedFromClient[i] + "_CPU`";    //get all the cpu data from table
 		         ResultSet rs= stmt.executeQuery(sql);
 		         int cpusize= 0;    										 //get the number of the rows
 		         if (rs != null){  
@@ -52,7 +51,7 @@ class getPerformanceServlet extends HttpServlet {
 		        	 rs.last();  
 		        	 cpusize = rs.getRow();  
 		         }
-		         System.out.println(cpusize);
+		         //System.out.println(cpusize);
 		         rs.beforeFirst();
 		         CPU[] cpu = new CPU[cpusize];    
 		         int cpuindex = 0;
@@ -69,7 +68,7 @@ class getPerformanceServlet extends HttpServlet {
 		         performance.setCPU(cpu);
 		         rs.close();
 		         
-		         sql = "SELECT * FROM " + selectedFromClient[i] + "_MEMR";    //get all the memr data from table
+		         sql = "SELECT * FROM " + "`" + selectedFromClient[i] + "_MEMR`";    //get all the memr data from table
 		         rs= stmt.executeQuery(sql);
 		         int memrsize= 0;    										  //get the number of the rows
 		         if (rs != null){  
@@ -77,7 +76,7 @@ class getPerformanceServlet extends HttpServlet {
 		        	 rs.last();  
 		        	 memrsize = rs.getRow();  
 		         }
-		         System.out.println(memrsize);
+		         //System.out.println(memrsize);
 		         rs.beforeFirst();
 		         MEMR[] memr = new MEMR[memrsize];    
 		         int memrindex = 0;
@@ -94,7 +93,7 @@ class getPerformanceServlet extends HttpServlet {
 		         performance.setMEMR(memr);
 		         rs.close();
 		         
-		         sql = "SELECT * FROM " + selectedFromClient[i] + "_MEMW";    //get all the memw data from table
+		         sql = "SELECT * FROM " + "`" + selectedFromClient[i] + "_MEMW`";    //get all the memw data from table
 		         rs= stmt.executeQuery(sql);
 		         int memwsize= 0;    										  //get the number of the rows
 		         if (rs != null){  
@@ -102,7 +101,7 @@ class getPerformanceServlet extends HttpServlet {
 		        	 rs.last();  
 		        	 memwsize = rs.getRow();  
 		         }
-		         System.out.println(memwsize);
+		         //System.out.println(memwsize);
 		         rs.beforeFirst();
 		         MEMW[] memw = new MEMW[memwsize];    
 		         int memwindex = 0;
@@ -119,7 +118,7 @@ class getPerformanceServlet extends HttpServlet {
 		         performance.setMEMW(memw);
 		         rs.close();
 
-		         sql = "SELECT * FROM " + selectedFromClient[i] + "_DIO";    //get all the dio data from table
+		         sql = "SELECT * FROM " + "`" + selectedFromClient[i] + "_DIO`";    //get all the dio data from table
 		         rs= stmt.executeQuery(sql);
 		         int diosize= 0;    										 //get the number of the rows
 		         if (rs != null){  
@@ -127,7 +126,7 @@ class getPerformanceServlet extends HttpServlet {
 		        	 rs.last();  
 		        	 diosize = rs.getRow();  
 		         }
-		         System.out.println(diosize);
+		         //System.out.println(diosize);
 		         rs.beforeFirst();
 		         DIO[] dio = new DIO[diosize];    
 		         int dioindex = 0;

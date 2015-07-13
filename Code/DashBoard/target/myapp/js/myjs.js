@@ -70,70 +70,87 @@ $(document).ready(function(){
 				//        			['2', performances[1].performance[0].value,performances[1].performance[1].value]
 				//      		]
 				//when use, we should choose proper value for cpu, mem and disk
+				
 				var cpuColumn = [];
 				for (var i = 0; i < performances.length; i++) {
 					var item = [xValue[i]];
-					for (var j = 0; j < performances[i].cpu.length; j++) {
-						item.push(performances[i].cpu[j].date);
-					}
-					cpuColumn.push(item);
+					if ('cpu' in performances[i]) {
+						for (var j = 0; j < performances[i].cpu.length; j++) {
+							item.push(performances[i].cpu[j].date);
+						}
+						cpuColumn.push(item);
+					}		
 				}
 				for (var i = 0; i < performances.length; i++) {
 					var item = [datas[i]];
-					for (var j = 0; j < performances[i].cpu.length; j++) {
-						item.push(performances[i].cpu[j].value);
+					if ('cpu' in performances[i]) {
+						for (var j = 0; j < performances[i].cpu.length; j++) {
+							item.push(performances[i].cpu[j].value);
+						}
+						cpuColumn.push(item);
 					}
-					cpuColumn.push(item);
 				}
 
 				var memrColumn = [];
 				for (var i = 0; i < performances.length; i++) {
 					var item = [xValue[i]];
-					for (var j = 0; j < performances[i].memr.length; j++) {
-						item.push(performances[i].memr[j].date);
+					if ('memr' in performances[i]) {
+						for (var j = 0; j < performances[i].memr.length; j++) {
+							item.push(performances[i].memr[j].date);
+						}
+						memrColumn.push(item);	
 					}
-					memrColumn.push(item);
 				}
 				for (var i = 0; i < performances.length; i++) {
 					var item = [datas[i]];
-					for (var j = 0; j < performances[i].memr.length; j++) {
-						item.push(performances[i].memr[j].value);
+					if ('memr' in performances[i]) {
+						for (var j = 0; j < performances[i].memr.length; j++) {
+							item.push(performances[i].memr[j].value);
+						}
+						memrColumn.push(item);
 					}
-					memrColumn.push(item);
 				}
 
 				var memwColumn = [];
 				for (var i = 0; i < performances.length; i++) {
 					var item = [xValue[i]];
-					for (var j = 0; j < performances[i].memw.length; j++) {
-						item.push(performances[i].memw[j].date);
+					if ('memw' in performances[i]) {
+						for (var j = 0; j < performances[i].memw.length; j++) {
+							item.push(performances[i].memw[j].date);
+						}
+						memwColumn.push(item);
 					}
-					memwColumn.push(item);
 				}
 				for (var i = 0; i < performances.length; i++) {
 					var item = [datas[i]];
-					for (var j = 0; j < performances[i].memw.length; j++) {
-						item.push(performances[i].memw[j].value);
+					if ('memr' in performances[i]) {
+						for (var j = 0; j < performances[i].memw.length; j++) {
+							item.push(performances[i].memw[j].value);
+						}
+						memwColumn.push(item);
 					}
-					memwColumn.push(item);
 				}
 
 				var dioColumn = [];
 				for (var i = 0; i < performances.length; i++) {
 					var item = [xValue[i]];
-					for (var j = 0; j < performances[i].dio.length; j++) {
-						item.push(performances[i].dio[j].date);
+					if ('dio' in performances[i]) {
+						for (var j = 0; j < performances[i].dio.length; j++) {
+							item.push(performances[i].dio[j].date);
+						}
+						dioColumn.push(item);
 					}
-					dioColumn.push(item);
 				}
 				for (var i = 0; i < performances.length; i++) {
 					var item = [datas[i]];
-					for (var j = 0; j < performances[i].dio.length; j++) {
-						item.push(performances[i].dio[j].value);
+					if ('memr' in performances[i]) {
+						for (var j = 0; j < performances[i].dio.length; j++) {
+							item.push(performances[i].dio[j].value);
+						}
+						dioColumn.push(item);
 					}
-					dioColumn.push(item);
 				}
-
+				
 	 			$('#myModal').on('shown.bs.modal', function(e) {
 	 				//console.log("modal on");
 	 				
@@ -174,7 +191,7 @@ $(document).ready(function(){
 					//         position: 'right'
 					//     }
 					// });
-
+					
 					cpuchart = c3.generate({
 					    bindto: '#cpuChart',
 
@@ -189,7 +206,7 @@ $(document).ready(function(){
 					        show: true
 					    },
 					    legend: {
-					        position: 'right'
+					        position: 'bottom'
 					    }
 					});
 					
@@ -208,7 +225,7 @@ $(document).ready(function(){
 					        show: true
 					    },
 					    legend: {
-					        position: 'right'
+					        position: 'bottom'
 					    }
 					});
 
@@ -226,7 +243,7 @@ $(document).ready(function(){
 					        show: true
 					    },
 					    legend: {
-					        position: 'right'
+					        position: 'bottom'
 					    }
 					});
 
@@ -244,7 +261,7 @@ $(document).ready(function(){
 					        show: true
 					    },
 					    legend: {
-					        position: 'right'
+					        position: 'bottom'
 					    }
 					});
 
