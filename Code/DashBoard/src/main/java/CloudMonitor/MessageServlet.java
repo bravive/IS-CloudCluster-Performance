@@ -149,11 +149,11 @@ class getPerformanceServlet extends HttpServlet {
 		    }
 			catch(SQLException se){
 		         // handle JDBC error
-		         se.printStackTrace();
+				//se.printStackTrace();
 		    }
 			catch(Exception e){
 		         // handle Class.forName error
-		         e.printStackTrace();
+		         //e.printStackTrace();
 		    }
 			finally{
 		         // close
@@ -168,7 +168,7 @@ class getPerformanceServlet extends HttpServlet {
 		            conn.close();
 		         }
 		         catch(SQLException se){
-		            se.printStackTrace();
+		            //se.printStackTrace();
 		         }//end finally try
 		    } //end try
 			performances[i] = performance;
@@ -310,11 +310,11 @@ class getStatusServlet extends HttpServlet {
 	    }
 	    catch(SQLException se){
 	        // handle JDBC error
-	    	se.printStackTrace();
+	    	//se.printStackTrace();
 	    }
 	    catch(Exception e){
 	        // handle Class.forName error
-	    	e.printStackTrace();
+	    	//e.printStackTrace();
 	    }
 	    finally{
 	        // close
@@ -329,7 +329,7 @@ class getStatusServlet extends HttpServlet {
 	            conn.close();
 	        }
 	        catch(SQLException se){
-	            se.printStackTrace();
+	            //se.printStackTrace();
 	        }//end finally try
 	    } //end try
 	}
