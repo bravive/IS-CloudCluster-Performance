@@ -21,6 +21,8 @@ public class ParseArgument {
 			/**boolean Option(eg. -h)*/
 			Option exec = new Option( "e", "executing monitoring");
 			Option help = new Option( "h", "print help information" );
+			Option verbose = new Option( "v", "print all configuration information" );
+			
 			/**Argument Option(eg. -aMax value)*/
 			Option aMax = OptionBuilder.withArgName( "aMaxNum" ).hasArg().withDescription("Specify AGGREGATOR maximal number. \n[Default: " + allArguments.aggMaxInstanceNum + "]").create( "aMax");
 			Option nMax = OptionBuilder.withArgName( "nMaxNum" ).hasArg().withDescription("Specify NODES maximal number. \n[Default: " + allArguments.nodMaxInstanceNum + "]").create( "nMax");
@@ -32,16 +34,18 @@ public class ParseArgument {
 			Option nZone = OptionBuilder.withArgName( "nZone" ).hasArg().withDescription("Specify NODES avaiable zone. \n[Default: " + allArguments.nodZone + "]").create( "nZone");
 			Option securityGroup = OptionBuilder.withArgName( "securityGroup" ).hasArg().withDescription("Specify security group name. \n[Default: " + allArguments.securityGroup + "]").create( "securityGroup");
 			Option productDescribe = OptionBuilder.withArgName( "productDescribe" ).hasArg().withDescription("Specify VM product describe. \n[Default: " + allArguments.productDescribe + "]").create( "productDescribe");
-			
+			Option s3Bucket = OptionBuilder.withArgName( "s3Bucket" ).hasArg().withDescription("Specify your s3 bucket directoy. \n[Default: " + allArguments.s3Bucket + "]").create( "s3Bucket");
+
 			/**Property Option(eg. -DaccessKeyId=XXXX)*/
 			Option property  = OptionBuilder.withArgName("property=value" ).hasArgs(2).withValueSeparator().withDescription( "Specify access key id BY \"accessKeyId\"; \nSpecify secret accesss key id BY \"secretAccesssKey\";" ).create( "D" );
 			
 			/**All option to options for parsing*******/
-			options.addOption(help);
 			options.addOption(exec);
+			options.addOption(help);
+			options.addOption(verbose);
+			
 			options.addOption(aMax);
 			options.addOption(nMax);
-			
 			options.addOption(aAMI);
 			options.addOption(nAMI);
 			options.addOption(aInstanceType);
@@ -50,6 +54,7 @@ public class ParseArgument {
 			options.addOption(nZone);
 			options.addOption(securityGroup);
 			options.addOption(productDescribe);
+			options.addOption(s3Bucket);
 			
 			options.addOption(property);
 			
@@ -73,7 +78,7 @@ public class ParseArgument {
 				allArguments.aggAmiId = cmd.getOptionValue("aAMI");
 			}
 			if (cmd.hasOption("nAMI")) {
-				allArguments.aggAmiId = cmd.getOptionValue("nAMI");
+				allArguments.nodAmiId = cmd.getOptionValue("nAMI");
 			}
 			if (cmd.hasOption("aInstanceType")) {
 				allArguments.aggInstanceType = cmd.getOptionValue("aInstanceType");
@@ -93,6 +98,9 @@ public class ParseArgument {
 			if (cmd.hasOption("productDescribe")) {
 				allArguments.productDescribe = cmd.getOptionValue("productDescribe");
 			}
+			if (cmd.hasOption("s3Bucket")) {
+				allArguments.s3Bucket = cmd.getOptionValue("s3Bucket");
+			}
 			
 			if (cmd.hasOption("D")) {
 				Properties props = cmd.getOptionProperties("D");
@@ -104,12 +112,16 @@ public class ParseArgument {
 				allArguments.secretAccesssKey = props.getProperty("secretAccesssKey");
 			} else {
 				Utility.logPrint("[Error]: Must provide your accessKeyId AND secretAccesssKey.");
-				//System.exit(1);
+				System.exit(1);
 			}
-			
+			/**verbose should be after setting*/
+			if (cmd.hasOption("v")) {
+				Utility.logPrint(allArguments.toString());
+			}
+			/**execute should be the last*/
 			if (!cmd.hasOption("e")) {
 				Utility.logPrint("[Info]: If you want execute monitor, please add -e argument");
-				//System.exit(1);
+				System.exit(1);
 			}
 			
 		} catch (ParseException e) {
@@ -123,14 +135,15 @@ class Arguments {
 	String secretAccesssKey = "";
 	String securityGroup = "all-traffic";
 	String productDescribe = "Linux/UNIX";
+	String s3Bucket = "s3://mengyegong/CloudClusterMonitor/";
 	/**************Aggregator Initial Variable**************/
-	String aggAmiId = "ami-dbfc07b0"; //"ami-0e0b1166";
+	String aggAmiId = "ami-539d5538"; //"ami-0e0b1166";
 	int aggMaxInstanceNum = 1;
 	String aggZone = "us-east-1d";
 	String aggInstanceType = "m3.medium";
 	String aggFileName = "AggregatorDNS.info";
 	/**************Nodes Initial Variable**************/
-	String nodAmiId = "ami-dbfc07b0"; //"ami-0e0b1166";
+	String nodAmiId = "ami-539d5538"; //"ami-0e0b1166";
 	int nodMaxInstanceNum = 2;
 	String nodZone = "us-east-1d";
 	String nodInstanceType = "m3.medium";
@@ -142,6 +155,7 @@ class Arguments {
 		rs += "secretAccesssKey: " + this.secretAccesssKey + "\n";
 		rs += "securityGroup: " + this.securityGroup + "\n";
 		rs += "productDescribe: " + this.productDescribe + "\n";
+		rs += "s3Bucket: " + this.s3Bucket + "\n";
 		
 		rs += "aggAmiId: " + this.aggAmiId + "\n";
 		rs += "aggMaxInstanceNum: " + this.aggMaxInstanceNum + "\n";

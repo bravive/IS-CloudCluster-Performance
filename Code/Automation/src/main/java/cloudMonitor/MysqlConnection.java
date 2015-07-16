@@ -2,7 +2,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class MysqlConnection {
 	private static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
@@ -25,8 +24,8 @@ public class MysqlConnection {
 			try {
 				Class.forName(JDBC_DRIVER).newInstance();
 				connection = DriverManager.getConnection(DB_URL, USER, PASS);
-			} catch (SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-				e.printStackTrace();
+			} catch (Exception e) {
+				Utility.logPrint(e.toString());
 			}
 		}
 	}
@@ -69,8 +68,8 @@ public class MysqlConnection {
 		            return true;
 		        }
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			Utility.logPrint(e.toString());
 		}
         return false;
 	}

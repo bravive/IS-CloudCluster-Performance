@@ -7,7 +7,7 @@ public class Automation {
 	static Object lock = new Object();
 	public static void main(String[] args) {
 		Arguments allArguments = ParseArgument.parseArguments(args);
-		//Utility.logPrint(allArguments.toString());
+		
 		
 		/*****************Access EC2*****************/
 		//Authorized by specified file.
@@ -15,6 +15,8 @@ public class Automation {
 //		AccessEC2 EC2handler = new AccessEC2(awsCredentialsPath);
 		//Authorized by input arguments.
 		AccessEC2 EC2handler = new AccessEC2(allArguments.accessKeyId, allArguments.secretAccesssKey);
+		/**************Common**************/
+		String s3Bucket = allArguments.s3Bucket;
 		/**************Aggregator Initial Variable**************/
 		String aggSecurityGroup = allArguments.securityGroup;
 		String aggAmiId = allArguments.aggAmiId; //"ami-0e0b1166";
@@ -59,7 +61,8 @@ public class Automation {
 			.withVMCluster(nodCluster);
 		coordinator
 			.withAggOutputPath(aggFileName)
-			.withNodOutputPath(nodFileName);
+			.withNodOutputPath(nodFileName)
+			.withS3Bucket(s3Bucket);
 		Thread aggMonitorThread = new Thread(mAgg, "Aggregator Monitor");
 		Thread nodMonitorThread = new Thread(mNod, "Nodes Monitor");
 		Thread coordinatorThread = new Thread(coordinator, "Coordinator");
@@ -78,8 +81,8 @@ class Coordinator implements Runnable {
 	 * */
 	private String aggFileName = "";
 	private String nodFileName = "";
+	private String s3Bucket = "";
 	private String mySqlIP = Utility.getLocalIp();
-    private String absPathOfMysqlIpFile = Utility.writeToFile(mySqlIP, "MySQL.info");
 	public void run() {
 		try {
 			synchronized(Automation.lock) {
@@ -100,12 +103,15 @@ class Coordinator implements Runnable {
 							 * configure files  as above.
 							 **/
 							if (success == true && Automation.aggCluster.isUpdated()) {
+								String absPathOfMysqlIpFile = Utility.writeToFile(this.mySqlIP, "MySQL.info");
+								String absPathOfS3BucketFile = Utility.writeToFile(this.s3Bucket, "S3Bucket.info");
 								Utility.scpFileByBash(host, "~/", absPathOfAggFile);
-								Utility.scpFileByBash(host, "~/", this.absPathOfMysqlIpFile);
+								Utility.scpFileByBash(host, "~/", absPathOfMysqlIpFile);
+								Utility.scpFileByBash(host, "~/", absPathOfS3BucketFile);
 								Utility.scpFileByBash(host, "~/", "../conf/is.pem");
 								Utility.scpFileByBash(host, "~/.s3cfg", "../conf/s3cfg");	
 								/**After file sending, should run program on Aggregator remotely as the first time */
-								Utility.remoteExec(host, "start_aggregator.sh", mySqlIP);
+								Utility.remoteExecWithPara(host, "start_aggregator.sh", this.mySqlIP, this.s3Bucket);
 							}
 						}
 						//After Send
@@ -126,6 +132,11 @@ class Coordinator implements Runnable {
 		this.nodFileName = nodOutputPath;
 		return this;
 	}
+	public Coordinator withS3Bucket(String s3Bucket) {
+		this.s3Bucket = s3Bucket;
+		return this;
+	}
+
 }
 //Monitor thread implements the real launching, tagging and monitoring process.
 class Monitor implements Runnable {
