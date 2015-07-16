@@ -16,7 +16,8 @@ import static io.undertow.servlet.Servlets.servlet;
 
 
 public class DashBoard {
-	public static void main(final String[] args) throws ServletException {
+	public static void main(final String[] args) {
+		try{
 		DeploymentInfo servletBuilder = deployment()
         .setClassLoader(DashBoard.class.getClassLoader())
         .setContextPath("/app")
@@ -42,6 +43,10 @@ public class DashBoard {
 		        .setHandler(path)
 		        .build();
 		server.start();
+		}
+		catch(Exception ex) {
+			
+		}
 	}
 }
 
