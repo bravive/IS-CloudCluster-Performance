@@ -20,15 +20,7 @@ public class MysqlConnection {
 	 * Contructor - initialize connection
 	 */
 	public MysqlConnection() {
-		// initialize connection
-		if (connection == null) {
-			try {
-				Class.forName(JDBC_DRIVER).newInstance();
-				connection = DriverManager.getConnection(DB_URL, USER, PASS);
-			} catch (SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
+		// do nothing
 	}
 	
 	/**
@@ -39,6 +31,9 @@ public class MysqlConnection {
 	 */
 	public boolean updateInstanceInfo(String instanceDNS, String status) {
 		try {
+			// initialize connection
+			Class.forName(JDBC_DRIVER).newInstance();
+			connection = DriverManager.getConnection(DB_URL, USER, PASS);
 			// select to see if instance exist
 			String instanceStatus = null;
 			statement = connection.prepareStatement(selectSQL);
@@ -70,6 +65,12 @@ public class MysqlConnection {
 		        }
 			}
 		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
         return false;

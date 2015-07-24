@@ -1,23 +1,20 @@
 #!/bin/bash
 #param1: master's public ip address
+#param2: s3 backup path
 
 PUBLIC_HOSTNAME="$(curl http://169.254.169.254/latest/meta-data/public-hostname 2>/dev/null)"
 ACTIVE_NODES_FILE="NodesDNS.info"
+MASTER_IP=$1
+DB_NAME="cloudMonitorDB"
 USERNAME=cloudMonitor
 PASSWORD=cloudMonitor
-MASTER_IP=$1
+S3_PATH=$2
 
 # helper function for inserting data into database
 # param1: tableName
-# param2&3: values
+# param2&3: columndValues
 insert_data() {
-	sqlCmd="USE cloudMonitorDB; "
-	sqlCmd=$sqlCmd"CREATE TABLE IF NOT EXISTS \`"$1"\` ("
-	sqlCmd=$sqlCmd"\`timestamp\` BIGINT UNSIGNED NOT NULL,"
-	sqlCmd=$sqlCmd"\`value\` DOUBLE NOT NULL);"
-	mysql -u $USERNAME -p$PASSWORD -s -N -e "$sqlCmd"
-
-	sqlCmd="USE cloudMonitorDB; "
+	sqlCmd="USE "$DB_NAME"; "
 	sqlCmd=$sqlCmd"INSERT INTO \`"$1"\` VALUES ("$2", "$3");"
 	mysql -h $MASTER_IP -u $USERNAME -p$PASSWORD -s -N -e "$sqlCmd"
 }
@@ -35,12 +32,11 @@ do
 		FILES=$folder/*
 		for file in $FILES
 		do
-			# echo "TODO: upload it to s3 and mysql, then remove it"
+			# upload benchmark file to mysql and s3, then remove it
 			filePathArray=(${file//// })
 			filename=${filePathArray[${#filePathArray[@]}-1]}
 			instanceDNS=${filePathArray[${#filePathArray[@]}-2]}
-			echo "s3cmd put "$instanceDNS"/"$filename"..."
-			# s3cmd put $filename "s3://CloudMonitor/data/"$instanceDNS"/"$filename
+			s3cmd put $file $S3_PATH"data/"$instanceDNS"/"$filename
 
 			python get_data.py < $file > $file"_clean"
 			IFS=";" read -r data < $file"_clean"
