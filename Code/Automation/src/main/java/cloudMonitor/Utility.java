@@ -64,13 +64,13 @@ public class Utility {
 	 * @param: remote executable script <remoteScriptName>
 	 * @param: sent information, eg. mySql_ip <mySqlIP>
 	 **/
-	public static boolean remoteExec(String hostName, String remoteScriptName, String mySqlIP) {
+	public static boolean remoteExecWithPara(String hostName, String remoteScriptName, String mySqlIP, String S3Bucket) {
 		int tatalDuration = 10;	//minute
 		int eachSleep = 30; //second
 		int iteration = tatalDuration * 60 / eachSleep;	//times
 		String scriptPathName = "sshExec.sh";
 		while(true) {
-			String cmd = "sh " + scriptPathName + " " + hostName + " " + remoteScriptName + " " + mySqlIP;
+			String cmd = "sh " + scriptPathName + " " + hostName + " " + remoteScriptName + " " + mySqlIP + " " + S3Bucket;
 			String inputLine = execBach(cmd);
 			if (inputLine.compareTo("OK") == 0) {
 				logPrint("[Info]: SSH exec successfully.");
@@ -89,6 +89,7 @@ public class Utility {
 		String cmd = "curl http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null";
 		String ip = execBach(cmd);
 		if (ip.matches("^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})$")) {
+			logPrint("[Info]: IP: " + ip);
 			return ip;
 		}
 		return null;

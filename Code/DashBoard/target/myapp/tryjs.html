@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <link href="css/bootstrap.min.css" rel="stylesheet">
+   <link href="css/mycss.css" rel="stylesheet">
+   <link href="css/demo.css" rel="stylesheet">
+   <link href="css/flat-ui.css" rel="stylesheet">
+   <link href='http://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+   <link href="css/jquery.dataTables.css" rel="stylesheet">
+   <script src="js/jquery-1.11.1.min.js"></script>
+   <script src="js/bootstrap.min.js"></script>
+   <script src="js/myjs.js"></script>
+   <script src="js/vis.min.js"></script>
+   <script src="js/jquery.dataTables.js"></script>
+   <script src="js/jquery.dataTables.min.js"></script>
+
+   <!-- Load c3.css -->
+  <link href="css/c3.css" rel="stylesheet" type="text/css">
+
+  <!-- Load d3.js and c3.js -->
+  <script src="js/d3.min.js" charset="utf-8"></script>
+  <script src="js/c3.min.js"></script>
+   <title>DashBoard</title>
+</head>
+<body>
+    <!-- Fixed navbar -->
+    <div class="row demo-row">
+        <div class="col-xs-12" style="opacity: 0.98">
+            <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" >
+                <div class="navbar-header" >
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-01">
+                        <span class="sr-only">Toggle navigation</span>
+                    </button>
+                    <a class="navbar-brand" href="#">DashBoard</a>
+                </div>
+            </nav><!-- /navbar -->
+        </div>
+    </div> <!-- /row -->
+  <div class="container " style="margin-top:60px;width:1100px">
+   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+        <div class="modal-dialog" style="top:80px">
+            <div class="modal-content">
+                <div class="modal-header">
+                        <button type="button" class="close"
+                            data-dismiss="modal">
+                            &times;
+                        </button>
+                        <h4 class="modal-title" id="myModalLabel">
+                            Performance Details
+                        </h4>
+                </div>
+                <div class="modal-body" style="overflow:auto">
+                        <ul id="PerformanceTab" class="nav nav-tabs">
+                           <li class="active"><a href="#cpu" data-toggle="tab">CPU</a></li>
+                           <li><a href="#memoryr" data-toggle="tab">MemoryRead</a></li>
+                           <li><a href="#memoryw" data-toggle="tab">MemoryWrite</a></li>
+                           <li><a href="#disk" data-toggle="tab">Disk</a></li>
+                        </ul>
+                        <div id="PerformanceTabContent" class="tab-content">
+                           <div class="tab-pane fade in active" id="cpu">
+                              <div id='cpuChart'></div>
+                           </div>
+                           <div class="tab-pane fade" id="memoryr">
+                              <div id='MemoryReadChart'></div>
+                           </div>
+                           <div class="tab-pane fade" id="memoryw">
+                              <div id='MemoryWriteChart'></div>
+                           </div>
+                           <div class="tab-pane fade" id="disk">
+                              <div id='DiskChart'></div>
+                           </div>
+                        </div>  
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+   </div>
+
+      
+   <div>
+      <table id="instanceStatus" class="display" cellspacing="0" width="100%" >
+        <thead>
+            <tr>
+                <th id="td1">Instance DNS</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>Instance DNS</th>
+                <th>Status</th>
+            </tr>
+        </tfoot>
+        <tbody>
+        </tbody>
+      </table>
+   </div>
+   <input type="submit" id='refresh' value="Refresh">
+   <input type="submit" data-toggle="modal" data-target="#myModal" style="float: right" value="Display" id='display'>
+  </div>
+</body>
+</html>
