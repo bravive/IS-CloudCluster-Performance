@@ -4,12 +4,12 @@ $(document).ready(function(){
 	var memwchart;
 	var diochart;
 
-	$('#myModal').on('hidden.bs.modal', function () {
-  		cpuchart.load({unload: true});
-  		memrchart.load({unload: true});
-  		memwchart.load({unload: true});
-  		diochart.load({unload: true});
-	})
+	// $('#myModal').on('hidden.bs.modal', function () {
+ //  		cpuchart.load({unload: true});
+ //  		memrchart.load({unload: true});
+ //  		memwchart.load({unload: true});
+ //  		diochart.load({unload: true});
+	// })
 
  	$('#display').click( function () {
  		//performances is used to store the return value from the server
@@ -65,7 +65,7 @@ $(document).ready(function(){
 
 				//the parameter for columns, which format is : [
 		        //      			['x0', performances[0].performance[0].date,performances[0].performance[1].date],
-		        //     				['x1', performances[1].performance[0].date,3],
+		        //     				['x1', performances[1].performance[0].date,],
 				//       			['1', performances[0].performance[0].value,performances[0].performance[1].value],
 				//        			['2', performances[1].performance[0].value,performances[1].performance[1].value]
 				//      		]
@@ -76,7 +76,19 @@ $(document).ready(function(){
 					var item = [xValue[i]];
 					if ('cpu' in performances[i]) {
 						for (var j = 0; j < performances[i].cpu.length; j++) {
-							item.push(performances[i].cpu[j].date);
+							var datevalue = performances[i].cpu[j].date;
+							var year = datevalue.substring(0, 4);
+    						var month = parseInt(datevalue.substring(4, 6)) - 1;							              
+    						var day = datevalue.substring(6, 8);
+    						var hour = datevalue.substring(8, 10);							    
+    						var minute = datevalue.substring(10, 12);
+    						var second = datevalue.substring(12, 14);
+
+    						var d = new Date(year,month,day,hour,minute,second,0);
+
+    						var dateEpoch = d.getTime();
+
+							item.push(performances[i].cpu[j].dateEpoch);
 						}
 						cpuColumn.push(item);
 					}		
@@ -96,7 +108,19 @@ $(document).ready(function(){
 					var item = [xValue[i]];
 					if ('memr' in performances[i]) {
 						for (var j = 0; j < performances[i].memr.length; j++) {
-							item.push(performances[i].memr[j].date);
+							var datevalue = performances[i].memr[j].date;
+							var year = datevalue.substring(0, 4);
+    						var month = parseInt(datevalue.substring(4, 6)) - 1;							              
+    						var day = datevalue.substring(6, 8);
+    						var hour = datevalue.substring(8, 10);							    
+    						var minute = datevalue.substring(10, 12);
+    						var second = datevalue.substring(12, 14);
+
+    						var d = new Date(year,month,day,hour,minute,second,0);
+
+    						var dateEpoch = d.getTime();
+
+							item.push(performances[i].memr[j].dateEpoch);
 						}
 						memrColumn.push(item);	
 					}
@@ -116,7 +140,19 @@ $(document).ready(function(){
 					var item = [xValue[i]];
 					if ('memw' in performances[i]) {
 						for (var j = 0; j < performances[i].memw.length; j++) {
-							item.push(performances[i].memw[j].date);
+							var datevalue = performances[i].memw[j].date;
+							var year = datevalue.substring(0, 4);
+    						var month = parseInt(datevalue.substring(4, 6)) - 1;							              
+    						var day = datevalue.substring(6, 8);
+    						var hour = datevalue.substring(8, 10);							    
+    						var minute = datevalue.substring(10, 12);
+    						var second = datevalue.substring(12, 14);
+
+    						var d = new Date(year,month,day,hour,minute,second,0);
+
+    						var dateEpoch = d.getTime();
+
+							item.push(performances[i].memw[j].dateEpoch);
 						}
 						memwColumn.push(item);
 					}
@@ -136,7 +172,19 @@ $(document).ready(function(){
 					var item = [xValue[i]];
 					if ('dio' in performances[i]) {
 						for (var j = 0; j < performances[i].dio.length; j++) {
-							item.push(performances[i].dio[j].date);
+							var datevalue = performances[i].dio[j].date;
+							var year = datevalue.substring(0, 4);
+    						var month = parseInt(datevalue.substring(4, 6)) - 1;							              
+    						var day = datevalue.substring(6, 8);
+    						var hour = datevalue.substring(8, 10);							    
+    						var minute = datevalue.substring(10, 12);
+    						var second = datevalue.substring(12, 14);
+
+    						var d = new Date(year,month,day,hour,minute,second,0);
+
+    						var dateEpoch = d.getTime();
+
+							item.push(performances[i].dio[j].dateEpoch);
 						}
 						dioColumn.push(item);
 					}
@@ -152,45 +200,6 @@ $(document).ready(function(){
 				}
 				
 	 			$('#myModal').on('shown.bs.modal', function(e) {
-	 				//console.log("modal on");
-	 				
-					// var memColumn = [];
-					// for (var i = 0; i < performances.length; i++) {
-					// 	var item = [xValue[i]];
-					// 	for (var j = 0; j < performances[i].performance.length; j++) {
-					// 		item.push(performances[i].performance[j].date);
-					// 	}
-					// 	memColumn.push(item);
-					// }
-					// for (var i = 0; i < performances.length; i++) {
-					// 	var item = [datas[i]];
-					// 	for (var j = 0; j < performances[i].performance.length; j++) {
-					// 		item.push(performances[i].performance[j].value);
-					// 	}
-					// 	memColumn.push(item);
-					// }
-					
-
-					//show how one line chart works with json input
-			  //       var cpuchart = c3.generate({
-					//     bindto: '#cpuChart',
-					//     data: {
-					//     	json: resp[0].cpu,
-					// 	    keys:{
-					// 	    	x:'date',
-					// 	    	value: ['value'],
-					// 	    },
-					//     },
-					//     zoom: {
-					//         enabled: true
-					//     },
-					//     subchart: {
-					//         show: true
-					//     },
-					//     legend: {
-					//         position: 'right'
-					//     }
-					// });
 					
 					cpuchart = c3.generate({
 					    bindto: '#cpuChart',
@@ -199,6 +208,14 @@ $(document).ready(function(){
 				          xs: ob,
 					      columns : cpuColumn
 					    },
+					    axis: { 
+                			x: { 
+                        		type: 'timeseries', 
+                        		tick: { 
+                                	format: '%Y-%m-%d %H:%M:%S', 
+                    		    }		 
+                			}	 
+        				}, 
 					    zoom: {
 					        enabled: true
 					    },
@@ -210,7 +227,6 @@ $(document).ready(function(){
 					    }
 					});
 					
-					//show how multiple lines chart works with different x axis value
 					memrchart = c3.generate({
 					    bindto: '#MemoryReadChart',
 					    
@@ -218,6 +234,14 @@ $(document).ready(function(){
 				          xs: ob,
 					      columns : memrColumn
 					    },
+					    axis: { 
+                			x: { 
+                        		type: 'timeseries', 
+                        		tick: { 
+                                	format: '%Y-%m-%d %H:%M:%S', 
+                    		    }		 
+                			}	 
+        				}, 
 					    zoom: {
 					        enabled: true
 					    },
@@ -236,6 +260,14 @@ $(document).ready(function(){
 				          xs: ob,
 					      columns : memwColumn
 					    },
+					    axis: { 
+                			x: { 
+                        		type: 'timeseries', 
+                        		tick: { 
+                                	format: '%Y-%m-%d %H:%M:%S', 
+                    		    }		 
+                			}	 
+        				}, 
 					    zoom: {
 					        enabled: true
 					    },
@@ -254,6 +286,14 @@ $(document).ready(function(){
 				          xs: ob,
 					      columns : dioColumn
 					    },
+					    axis: { 
+                			x: { 
+                        		type: 'timeseries', 
+                        		tick: { 
+                                	format: '%Y-%m-%d %H:%M:%S', 
+                    		    }		 
+                			}	 
+        				}, 
 					    zoom: {
 					        enabled: true
 					    },
@@ -264,12 +304,6 @@ $(document).ready(function(){
 					        position: 'bottom'
 					    }
 					});
-
-					//show how the c3.generate() function get parameters from outside
-					// var target = "\"#DiskChart\"";
-					// var text = '{"bindto":'+target+',"data":{"columns":[["data1",30,200,100,400,150,250]]}}';
-					// var obj = JSON.parse(text);
-					// var diskchart = c3.generate(obj);
 				});
 			},
     	});
@@ -285,17 +319,6 @@ $(document).ready(function(){
 	        { data: 'instanceDNS' },
 	        { data: 'status' },
 	    ]
-	//show how tables work with json input, the json format should like:
-    //{"data":[{"name":"Mengye Gong","position":"System Architect","salary":"$3,120","start_date":"2011/04/25","office":"Edinburgh"},
-    //         {"name":"Wei Li","position":"Software Developer","salary":"$5,120","start_date":"2013/04/4","office":"Fremond"}]}
-     //     columns: [
-	    //     { data: 'name' },
-	    //     { data: 'position' },
-	    //     { data: 'salary' },
-	    //     { data: 'office' },
-	    //     { data: 'start_date' },
-	    // ]
-
     });
     //enable click choose
     $('#instanceStatus tbody').on( 'click', 'tr', function () {
