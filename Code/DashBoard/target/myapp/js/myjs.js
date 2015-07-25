@@ -4,12 +4,12 @@ $(document).ready(function(){
 	var memwchart;
 	var diochart;
 
-	// $('#myModal').on('hidden.bs.modal', function () {
- //  		cpuchart.load({unload: true});
- //  		memrchart.load({unload: true});
- //  		memwchart.load({unload: true});
- //  		diochart.load({unload: true});
-	// })
+	$('#myModal').on('hidden.bs.modal', function () {
+  		cpuchart.load({unload: true});
+  		memrchart.load({unload: true});
+  		memwchart.load({unload: true});
+  		diochart.load({unload: true});
+	})
 
  	$('#display').click( function () {
  		//performances is used to store the return value from the server
@@ -88,7 +88,8 @@ $(document).ready(function(){
 
     						var dateEpoch = d.getTime();
 
-							item.push(performances[i].cpu[j].dateEpoch);
+							item.push(dateEpoch);
+							//item.push(performances[i].cpu[j].date);
 						}
 						cpuColumn.push(item);
 					}		
@@ -120,7 +121,7 @@ $(document).ready(function(){
 
     						var dateEpoch = d.getTime();
 
-							item.push(performances[i].memr[j].dateEpoch);
+							item.push(dateEpoch);
 						}
 						memrColumn.push(item);	
 					}
@@ -152,7 +153,7 @@ $(document).ready(function(){
 
     						var dateEpoch = d.getTime();
 
-							item.push(performances[i].memw[j].dateEpoch);
+							item.push(dateEpoch);
 						}
 						memwColumn.push(item);
 					}
@@ -184,7 +185,7 @@ $(document).ready(function(){
 
     						var dateEpoch = d.getTime();
 
-							item.push(performances[i].dio[j].dateEpoch);
+							item.push(dateEpoch);
 						}
 						dioColumn.push(item);
 					}
