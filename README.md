@@ -4,27 +4,27 @@ This project is aimed to automate the monitoring and performance measuring of cl
 
 The monitoring system is event driven for communication and uses Amazon S3 to backup data in case master node is crashed accidentally.
 
-|================================Master Node================================|
-||-----------------------------Manager Console------------------------------|
-||-------Automation------||-------DashBoard------||-----MySQL Databases----||
-||Aggregator Monitor   |													|
-||Cluster Nodes Monitor|													|
-||Coordinator          |													|
-|___________________________________________________________________________|
-		|														/\
-		|														|
-		|														|
-		\/														|
-|==============================Aggregator Node==============================|
-||------Contab Exec------||-------S3 Backup------||-----MySQL Maintainence--|
-|___________________________________________________________________________|
-		|		/\
-		|		|
-		|		|
-		\/		|
-|===============================Cluster Nodes================================|
+|=======================Master Node========================|
+||--------------------Manager Console----------------------|
+||---Automation---||---DashBoard---||---MySQL Databases---||
+||Agg Monitor    |					   |
+||Cluster Monitor|					   |
+||Coordinator    |					   |
+|__________________________________________________________|
+	|					/\
+	|					|
+	|					|
+	\/					|
+|=====================Aggregator Node======================|
+||---Contab Exec--||---S3 Backup--||---MySQL Maintainence--|
+|__________________________________________________________|
+   	|	/\
+	|	|
+	|	|
+	\/	|
+|==============================Cluster Nodes=================================|
 ||--CPU BenchMark--||--Mem Read--||--Mem Write--||--DISK IO--||--Network IO--|
-||(SysBench)		(SysBench)	  (SysBench)	 (SysBench)	  (WY20)		 |
+||(SysBench)	    (SysBench)	  (SysBench)	 (SysBench)   (WY20)	     |
 |____________________________________________________________________________|
 
 
