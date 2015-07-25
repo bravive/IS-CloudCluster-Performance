@@ -30,6 +30,6 @@ for line in sys.stdin:
         dio_timestamp = line
     if line_number == 125:
         dio_req_per_sec = line.split()[0]
-        sys.stdout.write("%s;%s;%s;%s;%s;%s;%s;%s\n\n" % (cpu_timestamp, cpu_totaltime, memr_timestamp, memr_ops_per_sec, memw_timestamp, memw_ops_per_sec, dio_timestamp, dio_req_per_sec))
+        sys.stdout.write("%s,%s,%s,%s,%s,%s,%s,%s\n\n" % (cpu_timestamp, cpu_totaltime, memr_timestamp, memr_ops_per_sec, memw_timestamp, memw_ops_per_sec, dio_timestamp, dio_req_per_sec))
     line_number = line_number + 1
 
