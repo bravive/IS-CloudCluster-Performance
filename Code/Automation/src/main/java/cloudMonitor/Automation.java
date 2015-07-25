@@ -6,8 +6,10 @@ public class Automation {
 	static public VmCluster nodCluster = new VmCluster();
 	static Object lock = new Object();
 	public static void main(String[] args) {
-		Arguments allArguments = ParseArgument.parseArguments(args);
+		MysqlConnection conn = new MysqlConnection();
+		conn.initDB();
 		
+		Arguments allArguments = ParseArgument.parseArguments(args);
 		
 		/*****************Access EC2*****************/
 		//Authorized by specified file.
@@ -63,6 +65,7 @@ public class Automation {
 			.withAggOutputPath(aggFileName)
 			.withNodOutputPath(nodFileName)
 			.withS3Bucket(s3Bucket);
+		
 		Thread aggMonitorThread = new Thread(mAgg, "Aggregator Monitor");
 		Thread nodMonitorThread = new Thread(mNod, "Nodes Monitor");
 		Thread coordinatorThread = new Thread(coordinator, "Coordinator");
