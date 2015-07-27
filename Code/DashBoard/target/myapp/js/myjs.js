@@ -9,9 +9,21 @@ $(document).ready(function(){
   		memrchart.load({unload: true});
   		memwchart.load({unload: true});
   		diochart.load({unload: true});
+  		$('[data-key="net"]').remove();
 	})
 
  	$('#display').click( function () {
+
+ 		var tabs = $("#alltabs").tabs();
+ 		var ul = tabs.find("ul");
+ 		var selectedInsNum = oTable.rows('.selected').data().length;
+ 		for (var i = 0; i < selectedInsNum; i++) {
+ 			var tmpID = "Network-" + i;
+ 			$("<li data-key='net'><a href='#Network-" + i + "' data-toggle='tab'>" + tmpID + "</a></li>" ).appendTo( ul );
+ 			tabs.append("<div data-key='net' class='tab-pane fade' id='" + tmpID + "'><div id='" + tmpID + "Graph' style='margin-top:10px;margin-left:30px;width:500px;height:400px'></div>");
+ 			tabs.tabs("refresh");
+ 		} 		
+
  		//performances is used to store the return value from the server
  		var performances = [];
  		//get the selected instance in the table and make a json which will be send to server
@@ -36,7 +48,7 @@ $(document).ready(function(){
     		},
     		success : function(resp) {
 	 			performances = resp;
-	 			//console.log(performances);
+	 			console.log(performances);
 	 			//console.log(performances.length);
 	 			var datas = new Array();
 				var xValue = new Array();
@@ -304,11 +316,59 @@ $(document).ready(function(){
 					    legend: {
 					        position: 'bottom'
 					    }
-					});
+					});	  	
 				});
-			},
-    	});
-    });
+
+				$("#alltabs").tabs({
+	    			activate: function (event, ui) {
+	        			
+	    				var network = null;
+	    				var size = 10;
+	    				var smooth = {enabled: false};
+	    				// for(var i = 0; i < performances.length; i++) {
+
+	    				// }
+	    				for(var i = 0; i < performances.length; i++) {
+	    					
+	    					if('net' in performances[i]) {
+	    						var containerID = "Network-" + i +"Graph";
+	    						var nnodes = new Array();
+			    				var eedges = new Array();
+			    				
+			    				nnodes[0] = {id: performances[i].id, size: size, label: performances[i].id};
+			    				for(var j = 0; j < performances[i].net.length; j++) {
+			    					var tmp = {id: performances[i].net[j].node, size: size, label: performances[i].net[j].node};
+			    					nnodes[j+1] = tmp;
+			    				}
+			    				for(var j = 0; j < performances[i].net.length; j++) {
+			    					var tmp = {from: performances[i].id, to: performances[i].net[j].node, length: 100, title: performances[i].net[j].value, smooth: smooth};
+			    					eedges[j] = tmp;
+			    				}
+			    			    console.log(nnodes);
+			    				console.log(eedges);
+							    // Instantiate our network object.
+							    console.log(containerID);
+							    var container = document.getElementById(containerID);
+							    console.log(container);
+							    var data = {
+							        nodes: nnodes,
+							        edges: eedges
+							    };
+							    var options = {
+							        nodes: {
+							        	shape: 'dot',
+							        }
+							    };
+							    if(container != null) {
+							    	network = new vis.Network(container, data, options);
+							    }
+	    					}
+	    				}	  	
+					}   //end of activate: function
+				}); //end of $("#alltabs").tabs
+			},  //end of success : function(resp)
+    	});  //end of $.ajax
+    });  //end of $('#display').click
 
     
     var oTable = $('#instanceStatus').DataTable({
