@@ -5,7 +5,7 @@
 #Default Params
 user="root"
 auto=0
-ipfile=0
+ipfile="default"
 firewall=0
 output_file="wy20results.csv"
 output_file2="wy20matrix.txt"
@@ -79,7 +79,7 @@ then
 	echo $num Machines Detected on EC2
 else
 	#echo $ipfile
-	if [ $ipfile -eq 0 ]
+	if [ "$ipfile" == "default" ]
 	then
 		echo "Error! Need IP file, or specify -a" >&2
 		echo $USAGE >&2
