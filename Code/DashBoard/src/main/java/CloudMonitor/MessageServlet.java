@@ -43,6 +43,7 @@ class getPerformanceServlet extends HttpServlet {
 		         conn = DriverManager.getConnection(DB_URL,USER,PASS);
 		         stmt = conn.createStatement();
 		         String sql;
+		     
 		         sql = "SELECT * FROM " + "`" + selectedFromClient[i] + "_CPU`";    //get all the cpu data from table
 		         ResultSet rs= stmt.executeQuery(sql);
 		         int cpusize= 0;    										 //get the number of the rows
@@ -142,6 +143,32 @@ class getPerformanceServlet extends HttpServlet {
 		         }  
 		         performance.setDIO(dio);
 		         rs.close();
+		         
+		         sql = "SELECT * FROM " + "`" + selectedFromClient[i] + "_NET`";    //get all the net data from table
+		         rs= stmt.executeQuery(sql);
+		         int netsize= 0;    										 //get the number of the rows
+		         if (rs != null){  
+		        	 rs.beforeFirst();  
+		        	 rs.last();  
+		        	 netsize = rs.getRow();  
+		         }
+		         //System.out.println(netsize);
+		         rs.beforeFirst();
+		         NET[] net = new NET[netsize];    
+		         int netindex = 0;
+		         while(rs.next()) {		        	 
+		        	 String node = rs.getString("reference");
+		        	 String value = rs.getString("value");
+		        	 //set a instance of NET
+		        	 NET tmp = new NET();
+		        	 tmp.setNode(node);
+		        	 tmp.setValue(value);
+		        	 //put the instance into the array
+		        	 net[netindex++] = tmp;
+		         }
+		         performance.setNET(net);
+		         rs.close();
+		         
 		         // clear
 		         stmt.close();
 		         conn.close();
@@ -232,12 +259,24 @@ class DIO {
 	}
 }
 
+class NET {
+	private String node;
+	private String value;
+	
+	public void setNode(String node) {
+		this.node = node;
+	}
+	public void setValue(String value) {
+		this.value = value;
+	}
+}
 class Performances {
 	private String id;
 	private CPU[] cpu;
 	private MEMR[] memr;
 	private MEMW[] memw;
 	private DIO[] dio;
+	private NET[] net;
 	
 	public void setId(String id) {
 		this.id = id;
@@ -253,6 +292,9 @@ class Performances {
 	}
 	public void setDIO(DIO[] dio) {
 		this.dio = dio;
+	}
+	public void setNET(NET[] net) {
+		this.net = net;
 	}
 }
 

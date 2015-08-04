@@ -4,14 +4,16 @@
    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
    <link href="css/bootstrap.min.css" rel="stylesheet">
    <link href="css/mycss.css" rel="stylesheet">
+   <link href="css/vis.css" rel="stylesheet">
    <link href="css/demo.css" rel="stylesheet">
    <link href="css/flat-ui.css" rel="stylesheet">
    <link href='http://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
    <link href="css/jquery.dataTables.css" rel="stylesheet">
    <script src="js/jquery-1.11.1.min.js"></script>
+   <script src="js/jquery-ui.min.js"></script>
    <script src="js/bootstrap.min.js"></script>
    <script src="js/myjs.js"></script>
-   <script src="js/vis.min.js"></script>
+   <script src="js/vis.js"></script>
    <script src="js/jquery.dataTables.js"></script>
    <script src="js/jquery.dataTables.min.js"></script>
 
@@ -51,12 +53,13 @@
                             Performance Details
                         </h4>
                 </div>
-                <div class="modal-body" style="overflow:auto">
+                <div id="alltabs" class="modal-body" style="overflow:auto">
                         <ul id="PerformanceTab" class="nav nav-tabs">
                            <li class="active"><a href="#cpu" data-toggle="tab">CPU</a></li>
                            <li><a href="#memoryr" data-toggle="tab">MemoryRead</a></li>
                            <li><a href="#memoryw" data-toggle="tab">MemoryWrite</a></li>
                            <li><a href="#disk" data-toggle="tab">Disk</a></li>
+                           <!-- <li><a href="#testnet" data-toggle="tab">Testnet</a></li> -->
                         </ul>
                         <div id="PerformanceTabContent" class="tab-content">
                            <div class="tab-pane fade in active" id="cpu">
@@ -71,14 +74,17 @@
                            <div class="tab-pane fade" id="disk">
                               <div id='DiskChart'></div>
                            </div>
+                           <!-- <div class="tab-pane fade" id="testnet">
+                              <div id='netChart' style="margin-top:10px;margin-left:30px;width:500px;height:400px"></div>
+                           </div> -->
                         </div>  
                 </div>
                 <div class="modal-footer">
                 </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal -->
-   </div>
+            </div>
+        </div>
 
+   </div>
       
    <div>
       <table id="instanceStatus" class="display" cellspacing="0" width="100%" >
@@ -101,5 +107,6 @@
    <input type="submit" id='refresh' value="Refresh">
    <input type="submit" data-toggle="modal" data-target="#myModal" style="float: right" value="Display" id='display'>
   </div>
+  <div id="tabid"></div>
 </body>
 </html>
