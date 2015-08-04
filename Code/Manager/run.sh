@@ -5,15 +5,18 @@ secretAccessKey=
 securityGroup="all-traffic"
 productDescribe="Linux/UNIX"
 
-aAMI="ami-dbfc07b0"
+aAMI=
 aMax=1
 aZone="us-east-1d"
 aInstanceType="m3.medium"
 
-nAMI="ami-dbfc07b0"
+nAMI=
 nMax=2
 nZone="us-east-1d"
 nInstanceType="m3.medium"
+
+aSpot="true"
+nSpot="true"
 
 verbose=0 
 
@@ -24,14 +27,16 @@ show_help () {
 	echo "	--secretAccessKey 		Specify secret accesss key id."
 	echo " 	--securityGroup 		Specify security group name. [Default: $securityGroup]"
 	echo "	--productDescribe 		Specify VM product describe. [Default: $productDescribe]"
-	echo "	--aAMI 				Specify AGGREGATOR AMI ID. [Default: $aAMI]"
+	echo "	--aAMI 				Specify AGGREGATOR AMI ID."
 	echo "	--aMax 				Specify AGGREGATOR maximal number. [Default: $aMax]"
 	echo "	--aZone 			Specify AGGREGATOR avaiable zone. [Default: $aZone]"
 	echo "	--aInstanceType 		Specify AGGREGATOR aws instance type. [Default: $aInstanceType]"
-	echo "	--nAMI    			Specify NODES AMI ID. [Default: $nAMI]"
+	echo "	--nAMI    			Specify NODES AMI ID."
 	echo "	--nMax 			 	Specify NODES maximal number. [Default: $nMax]"
 	echo "	--nZone 			Specify NODES avaiable zone. [Default: $nZone]"
 	echo "	--nInstanceType 		Specify NODES aws instance type. [Default: $nInstanceType]"
+	echo "  --aSpot             Specify whether use spot instance for aggregator. [Default: $aSpot]"
+	echo "  --nSpot             Specify whether use spot instance for nodes [Default: $nSpot]."
 }
 
 while :; do
@@ -79,6 +84,9 @@ while :; do
 				aAMI=$2
 				shift 2
 				continue
+			else 
+				printf 'ERROR: "--aAMI" requires a non-empty option argument.\n' >&2
+                exit 1
 			fi
 			;;
 		--aMax)
@@ -95,6 +103,20 @@ while :; do
 				continue
 			fi
 			;;
+		--aSpot)
+			if [ -n "$2" ]; then
+				aSpot=$2
+				shift 2
+				continue
+			fi
+			;;
+		--nSpot)
+			if [ -n "$2" ]; then
+				nSpot=$2
+				shift 2
+				continue
+			fi
+			;;
 		--aInstanceType)
 			if [ -n "$2" ]; then
 				aInstanceType=$2
@@ -107,6 +129,9 @@ while :; do
 				nAMI=$2
 				shift 2
 				continue
+			else 
+				printf 'ERROR: "--nAMI" requires a non-empty option argument.\n' >&2
+                exit 1
 			fi
 			;;
 		--nMax)
@@ -163,11 +188,13 @@ echo "aAMI=$aAMI"
 echo "aMax=$aMax"
 echo "aZone=$aZone"
 echo "aInstanceType=$aInstanceType"
+echo "aSpot=$aSpot"
 
 echo "nAMI=$nAMI"
 echo "nMax=$nMax"
 echo "nZone=$nZone"
 echo "nInstanceType=$nInstanceType"
+echo "nSpot=$nSpot"
 
 awk -v "a=$accessKeyId" -v "b=$secretAccessKey" '{ 
         if ($1~/^access_key*/) 
@@ -181,6 +208,6 @@ mv s3cfg1 ../conf/s3cfg
 cd ../..
 java -cp 'DashBoard.jar' DashBoard &
 cd ziyuans/monitor
-mvn exec:java -Dexec.args="-e -DaccessKeyId=$accessKeyId -DsecretAccesssKey=$secretAccessKey -securityGroup=$securityGroup -productDescribe=$productDescribe -aAMI=$aAMI -aMax=$aMax -aZone=$aZone -aInstanceType=$aInstanceType -nAMI=$nAMI -nMax=$nMax -nZone=$nZone -nInstanceType=$nInstanceType"
+mvn exec:java -Dexec.args="-e -DaccessKeyId=$accessKeyId -DsecretAccesssKey=$secretAccessKey -securityGroup=$securityGroup -productDescribe=$productDescribe -aAMI=$aAMI -aMax=$aMax -aZone=$aZone -aInstanceType=$aInstanceType -nAMI=$nAMI -nMax=$nMax -nZone=$nZone -nInstanceType=$nInstanceType -aSpot=$aSpot -nSpot=$nSpot"
 
 
