@@ -77,7 +77,7 @@ while True:
                 dio_timestamp = line.split()[-1][:-1]
     if line_number == 125:
         if "Requests/sec" in line:
-            dio_req_per_sec = ine.split()[0]
+            dio_req_per_sec = line.split()[0]
         while dio_req_per_sec == None:
             line = sys.stdin.readline()
             line_number = line_number + 1
